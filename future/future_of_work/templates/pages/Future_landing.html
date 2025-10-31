@@ -1,0 +1,313 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
+    <meta name = "robots" content = "index, follow">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon_io/apple-touch-icon.png" %}">
+    <link rel="icon" sizes="192x192" href="{% static "favicon_io/android-chrome-192x192.png" %}">
+    <link rel="icon" sizes="256x256" href="{% static "favicon_io/android-chrome-512x512.png" %}">
+    <link rel="icon" type="image/x-icon" href="{% static "favicon_io/favicon.ico" %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon_io/favicon-32x32.png" %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon_io/favicon-16x16.png" %}">
+    <link rel="manifest" href="{% static "favicon_io/site.webmanifest" %}">
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+
+    <title>{{ title }}</title>
+    <!-- Tailwind CSS CDN & Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#f6c960',
+              offwhite: '#f8f8f8',
+              charcoal: '#1a1a1a',
+              accentgray: '#2d2d2d',
+            },
+            fontFamily: {
+              inter: ["Inter", "sans-serif"],
+              poppins: ["Poppins", "sans-serif"],
+            },
+            boxShadow: {
+              card: '0 6px 36px 0 rgba(246, 201, 96, 0.07)',
+            }
+          },
+        },
+      };
+    </script>
+    <!-- Google Fonts: Inter & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      body { font-family: 'Inter', 'Poppins', sans-serif; }
+      html { scroll-behavior: smooth; }
+      body.fade-out { opacity: 0; transition: opacity 0.33s; }
+    </style>
+  </head>
+  <body class="bg-charcoal text-offwhite min-h-screen antialiased">
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative flex flex-col items-center justify-center min-h-[90vh] w-full bg-gradient-to-br from-charcoal via-accentgray/90 to-charcoal overflow-hidden px-2 sm:px-0">
+      <div class="absolute inset-0 pointer-events-none z-0">
+        <!-- Animated gradient shapes / background for effect -->
+        <div class="animate-pulse absolute top-1/3 left-1/2 w-96 h-96 bg-gold/20 rounded-full blur-3xl -translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-1/4 w-64 h-64 bg-gold/10 rounded-full blur-2xl"></div>
+      </div>
+      <div class="relative z-10 w-full max-w-3xl px-2 pt-32 pb-16 flex flex-col items-center text-center"> <!-- px-2 for mobile -->
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-poppins font-bold leading-tight text-offwhite mb-4">
+          Learn. Do. Earn. <span class="block mt-2">The <span class="text-gold">Future of Work</span> Starts Here.</span>
+        </h1>
+        <div class="w-24 h-1 rounded bg-gradient-to-r from-gold/80 via-gold to-transparent mx-auto mb-6"></div>
+        <p class="text-lg md:text-xl text-offwhite mb-8 font-inter max-w-2xl mx-auto">
+          A digital skill-building community helping young Africans learn in-demand skills, apply them through real projects, and earn from opportunities.
+        </p>
+        <div class="flex gap-4 flex-col sm:flex-row justify-center">
+          <a href="{% url 'auth' %}" class="bg-gold text-charcoal font-poppins font-bold px-7 py-3 rounded-full shadow-lg hover:scale-105 transition w-full sm:w-auto">Join the Movement</a>
+          <button id="watch-overview" class="border-2 border-gold text-gold font-bold px-7 py-3 rounded-full bg-transparent hover:bg-gold/10 hover:text-offwhite transition">Watch Overview</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal for Login/Register -->
+    <div id="user-auth-modal" class="hidden fixed inset-0 z-50 bg-charcoal/90 flex items-center justify-center">
+      <div class="bg-accentgray rounded-xl shadow-lg p-8 max-w-sm w-full relative">
+        <button id="close-auth-modal" class="absolute top-2 right-3 text-gold text-xl font-bold">×</button>
+        <h3 class="text-2xl mb-5 text-gold font-poppins font-bold text-center">Welcome!</h3>
+        <div class="flex flex-col gap-4 items-center">
+          <button id="auth-register-btn" class="w-full bg-gold text-charcoal font-bold py-2 rounded-full hover:scale-105 transition">Register</button>
+          <button id="auth-login-btn" class="w-full bg-charcoal text-gold border border-gold font-bold py-2 rounded-full hover:bg-charcoal/60 transition">Login</button>
+        </div>
+        <!-- Login Mode Toggle -->
+        <div class="flex justify-center items-center my-3">
+          <button id="login-mode-toggle" class="bg-charcoal text-gold border border-gold px-2 py-1 rounded-full text-xs">Login as Admin</button>
+        </div>
+        <!-- Login form (hidden by default) -->
+        <form id="user-login-form" class="hidden flex flex-col gap-3 mt-3">
+          <input id="login-email" type="email" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite" placeholder="Email address" required />
+          <input id="login-password" type="password" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite" placeholder="Password" required />
+          <label class="text-xs flex items-center gap-1"><input type="checkbox" id="login-remember-me" class="mr-1">Remember Me</label>
+          <button type="submit" class="-full bg-gold text-charcoal font-bold px-4 py-2 rounded-full hover:scale-105 transition">Log In</button>
+          <a href="#" id="forgot-password-link" class="text-xs mt-1 text-gold text-center">Forgot Password?</a>
+          <div id="login-user-error" class="text-xs text-red-400 text-center hidden"></div>
+        </form>
+        <!-- Reset password form -->
+        <form id="reset-password-form" class="hidden flex flex-col gap-3 mt-3">
+          <input id="reset-email" type="email" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite" placeholder="Your email address" required />
+          <input id="reset-new-pw" type="password" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite" placeholder="New password" required />
+          <button type="submit" class="w-full bg-gold text-charcoal font-bold px-4 py-2 rounded-full hover:scale-105 transition">Reset Password</button>
+          <div id="reset-pw-msg" class="text-xs text-gold text-center hidden"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- VISION SECTION -->
+    <section id="vision" class="bg-accentgray py-12 sm:py-20 px-2 sm:px-4">
+      <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-poppins font-bold text-gold mb-4">Our Vision</h2>
+          <p class="text-offwhite text-lg mb-6">To bridge the gap between education and opportunity by helping learners grow through practical skill application, collaboration, and digital inclusion.</p>
+          <div class="grid grid-cols-3 gap-4 mt-8">
+            <div class="bg-charcoal rounded-xl flex flex-col items-center p-5 shadow-card animate-fadeIn">
+              <span class="text-2xl mb-2">📈</span>
+              <span class="text-gold font-bold text-sm">Upskill</span>
+            </div>
+            <div class="bg-charcoal rounded-xl flex flex-col items-center p-5 shadow-card animate-fadeIn delay-100">
+              <span class="text-2xl mb-2">🤝</span>
+              <span class="text-gold font-bold text-sm">Collaborate</span>
+            </div>
+            <div class="bg-charcoal rounded-xl flex flex-col items-center p-5 shadow-card animate-fadeIn delay-200">
+              <span class="text-2xl mb-2">🔗</span>
+              <span class="text-gold font-bold text-sm">Connect</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-center md:justify-end relative">
+          <div class="relative w-full aspect-video max-w-[720px] rounded-3xl overflow-hidden shadow-xl border-4 border-gold mx-auto animate-fadeIn bg-charcoal">
+            <video src="{% static 'promo.mp4' %}" autoplay muted loop playsinline poster="assets/promo-thumb.jpg" class="absolute inset-0 w-full h-full object-cover"></video>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- GROWTH LOOP SECTION -->
+    <section id="growth-loop" class="py-12 sm:py-20 px-2 sm:px-4 bg-charcoal">
+      <div class="max-w-5xl mx-auto flex flex-col items-center gap-10">
+        <h3 class="text-2xl md:text-3xl font-poppins font-bold text-gold text-center">Learn → Do → Earn</h3>
+        <div class="flex flex-col md:flex-row items-center w-full gap-6 md:gap-0 mt-5">
+          <div class="flex-1 flex flex-col items-center text-center px-5">
+            <div class="bg-gold/10 rounded-full h-20 w-20 flex items-center justify-center mb-3"><span class="text-3xl">🧠</span></div>
+            <h4 class="font-bold text-lg mb-2 font-poppins">Learn</h4>
+            <p class="text-offwhite mb-2 font-inter">Attend workshops, join skill pods, and access mentorship.</p>
+          </div>
+          <div class="hidden md:block w-20 text-center">
+            <span class="inline-block mt-6 text-gold text-2xl animate-bounce">→</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center text-center px-5">
+            <div class="bg-gold/10 rounded-full h-20 w-20 flex items-center justify-center mb-3"><span class="text-3xl">⚙️</span></div>
+            <h4 class="font-bold text-lg mb-2 font-poppins">Do</h4>
+            <p class="text-offwhite mb-2 font-inter">Apply your skills through micro-projects and collaborations.</p>
+          </div>
+          <div class="hidden md:block w-20 text-center">
+            <span class="inline-block mt-6 text-gold text-2xl animate-bounce">→</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center text-center px-5">
+            <div class="bg-gold/10 rounded-full h-20 w-20 flex items-center justify-center mb-3"><span class="text-3xl">💰</span></div>
+            <h4 class="font-bold text-lg mb-2 font-poppins">Earn</h4>
+            <p class="text-offwhite mb-2 font-inter">Get recognized, hired, or funded for your growth.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILL PODS SECTION -->
+    <section id="pods" class="bg-accentgray py-12 sm:py-20 px-2 sm:px-4">
+      <div class="max-w-6xl mx-auto">
+        <h3 class="text-2xl md:text-3xl font-poppins font-bold text-gold mb-10 text-center">Explore Skill Pods</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7">
+          <div class="bg-charcoal rounded-2xl p-8 shadow-card hover:shadow-gold/70 hover:-translate-y-2 transition-all duration-200 flex flex-col items-center text-center">
+            <span class="text-3xl mb-3">🎥</span>
+            <h4 class="font-semibold mb-1 font-poppins">Creator Pod</h4>
+            <p class="text-offwhite text-sm">For storytellers and creators building a personal brand and growing on social.</p>
+          </div>
+          <div class="bg-charcoal rounded-2xl p-8 shadow-card hover:shadow-gold/70 hover:-translate-y-2 transition-all duration-200 flex flex-col items-center text-center">
+            <span class="text-3xl mb-3">📚</span>
+            <h4 class="font-semibold mb-1 font-poppins">Educator Pod</h4>
+            <p class="text-offwhite text-sm">For trainers and explainers who inspire action through teaching and content.</p>
+          </div>
+          <div class="bg-charcoal rounded-2xl p-8 shadow-card hover:shadow-gold/70 hover:-translate-y-2 transition-all duration-200 flex flex-col items-center text-center">
+            <span class="text-3xl mb-3">🤝</span>
+            <h4 class="font-semibold mb-1 font-poppins">Community Pod</h4>
+            <p class="text-offwhite text-sm">For connectors and hosts who build, manage, and grow online communities.</p>
+          </div>
+          <div class="bg-charcoal rounded-2xl p-8 shadow-card hover:shadow-gold/70 hover:-translate-y-2 transition-all duration-200 flex flex-col items-center text-center">
+            <span class="text-3xl mb-3">🧠</span>
+            <h4 class="font-semibold mb-1 font-poppins">Builder Pod</h4>
+            <p class="text-offwhite text-sm">For digital problem-solvers creating and shipping tools, apps, and automations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEMBERSHIP PLANS SECTION -->
+    <section id="plans" class="bg-gradient-to-b from-accentgray via-charcoal to-gold/10 py-12 sm:py-20 px-2 sm:px-4">
+      <div class="max-w-5xl mx-auto">
+        <h3 class="text-2xl md:text-3xl font-poppins font-bold text-gold mb-5 text-center">Choose Your Path</h3>
+        <div class="text-offwhite text-center mb-12 font-inter">Access our community, tasks, and mentoring. Move at your own speed, upgrade at any time.</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          <div class="bg-charcoal rounded-2xl p-7 shadow-card flex flex-col items-center text-center border-2 border-gold/0">
+            <div class="text-lg mb-1 text-gold font-bold">Free Access</div>
+            <div class="text-3xl font-bold mb-3">Free</div>
+            <ul class="mb-5 text-offwhite text-sm font-inter list-disc list-inside text-left mx-auto space-y-1 max-w-xs">
+              <li>Join events & discussions</li>
+              <li>Explore project pods</li>
+              <li>Network with creators & mentors</li>
+            </ul>
+            <a href="{% url 'onboarding' %}" class="px-5 py-3 rounded-full bg-gold text-charcoal font-semibold shadow hover:bg-gradient-to-br hover:from-gold hover:via-yellow-300 hover:to-gold transition">Join Now</a>
+          </div>
+          <div class="bg-charcoal rounded-2xl p-7 shadow-card flex flex-col items-center text-center border-4 border-gold ring-2 ring-gold/50 shadow-gold/40">
+            <div class="text-lg mb-1 text-gold font-bold">Premium Pod Access</div>
+            <div class="text-3xl font-bold mb-3">Explore</div>
+            <ul class="mb-5 text-offwhite text-sm font-inter list-disc list-inside text-left mx-auto space-y-1 max-w-xs">
+              <li>Mentorship & review sessions</li>
+              <li>Access to premium tasks & rewards</li>
+              <li>Pod alum badge & profile boost</li>
+            </ul>
+            <button class="px-5 py-3 rounded-full border-2 border-gold text-gold font-semibold bg-transparent hover:bg-gold hover:text-charcoal transition">Upgrade (Future)</a>
+          </div>
+          <div class="bg-charcoal rounded-2xl p-7 shadow-card flex flex-col items-center text-center border-2 border-gold/0">
+            <div class="text-lg mb-1 text-gold font-bold">Partner / Contributor</div>
+            <div class="text-3xl font-bold mb-3">Sponsor</div>
+            <ul class="mb-5 text-offwhite text-sm font-inter list-disc list-inside text-left mx-auto space-y-1 max-w-xs">
+              <li>Collaborate or sponsor a pod</li>
+              <li>Custom talent solutions</li>
+              <li>DAO voting & recognition</li>
+            </ul>
+            <a href="mailto:owlphadao@gmail.com" class="px-5 py-3 rounded-full border-2 border-gold text-gold font-semibold bg-transparent hover:bg-gold hover:text-charcoal transition">Contact Team</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY SECTION -->
+    <section id="community" class="bg-accentgray py-12 sm:py-20 relative overflow-hidden px-2 sm:px-4">
+      <div class="absolute inset-0">
+        <div class="w-full h-full bg-gradient-to-tr from-gold/5 via-accentgray/90 to-gold/5"></div>
+      </div>
+      <div class="relative z-10 max-w-4xl mx-auto">
+        <h3 class="text-2xl md:text-3xl font-poppins font-bold text-gold text-center mb-6">Powered by OwlphaDAO</h3>
+        <div class="text-offwhite text-center font-inter mb-6">
+          Our community is based on collaboration, ownership, and new opportunity.<br>
+          Connect with us, join our mission.
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-6">
+          <a href="https://t.me/+d8XLdNCQkhI0OTQ8" target="_blank" class="px-6 py-3 rounded-full bg-gold text-charcoal font-bold shadow hover:bg-gradient-to-br hover:from-gold hover:via-yellow-300 hover:to-gold transition">Join Telegram</a>
+          <a href="https://discord.gg/4Gy5R8KjAF" target="_blank" class="px-6 py-3 rounded-full bg-transparent border-2 border-gold text-gold font-bold hover:bg-gold/10 transition">Join Discord</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section id="testimonials" class="bg-charcoal py-12 sm:py-20 px-2 sm:px-4">
+      <div class="max-w-4xl mx-auto">
+        <h3 class="text-2xl md:text-3xl font-poppins font-bold text-gold mb-10 text-center">Learner Stories</h3>
+        <div class="flex flex-col md:flex-row gap-6 md:gap-8 justify-center items-stretch">
+          <div class="bg-accentgray rounded-2xl p-7 shadow-card flex-1 flex flex-col items-center text-center opacity-0 animate-fadeInUp">
+            <img src="{% static 'aisha.jpeg'%}" alt="user" class="w-14 h-14 rounded-full mb-2 border-gold border-2" />
+            <div class="font-bold mb-1 text-offwhite">Aisha Bello.</div>
+            <div class="text-accentgray text-sm mb-2">Future of Work Learner</div>
+            <blockquote class="italic text-offwhite">“Before joining The Future of Work Hub, I felt lost between theory and real experience. The Learn → Do → Earn model changed everything for me. Now I’m working on real digital projects and earning from what I actually enjoy doing.”</blockquote>
+          </div>
+          <div class="bg-accentgray rounded-2xl p-7 shadow-card flex-1 flex flex-col items-center text-center opacity-0 animate-fadeInUp delay-150">
+            <img src="{% static 'luca.jpeg'%}" alt="user" class="w-14 h-14 rounded-full mb-2 border-gold border-2" />
+            <div class="font-bold mb-1 text-offwhite">Luca Marino.</div>
+            <div class="text-accentgray text-sm mb-2">Future of Work Learner</div>
+            <blockquote class="italic text-offwhite">“As a remote designer, I’ve seen many online communities — but this one stands out. The mentorship culture here made me more confident in collaborating with global teams and even pitching my own creative ideas.”</blockquote>
+          </div>
+          <div class="bg-accentgray rounded-2xl p-7 shadow-card flex-1 flex flex-col items-center text-center opacity-0 animate-fadeInUp delay-300">
+            <img src="{% static 'priya.jpeg'%}" alt="user" class="w-14 h-14 rounded-full mb-2 border-gold border-2" />
+            <div class="font-bold mb-1 text-offwhite">Priya Menon.</div>
+            <div class="text-accentgray text-sm mb-2">Future of Work Learner</div>
+            <blockquote class="italic text-offwhite">“Transitioning from Web2 to Web3 felt intimidating at first. The way the Hub breaks down complex topics into simple, actionable lessons helped me get my first freelance gig in just a month!”</blockquote>
+          </div>
+        </div>
+      </div>
+      <style>
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px);} to { opacity: 1; transform: none;} }
+        .animate-fadeInUp { animation: fadeInUp 0.9s cubic-bezier(.6,.2,.1,1) both; }
+        .delay-150 { animation-delay: .15s; }
+        .delay-300 { animation-delay: .3s; }
+      </style>
+    </section>
+
+    <!-- CTA FOOTER -->
+    <footer id="cta-footer" class="bg-gold py-10 sm:py-14 px-2 sm:px-4 flex flex-col items-center mt-8 sm:mt-10">
+      <h2 class="text-2xl md:text-3xl font-bold font-poppins mb-4 text-charcoal text-center">Ready to Start Your Future of Work Journey?</h2>
+      <a href="{% url 'auth' %}" class="bg-charcoal text-gold font-bold font-poppins px-9 py-4 rounded-full shadow-lg text-lg hover:bg-accentgray transition mb-5">Join the Movement</a>
+      <img src="{% static 'owlphadao.jpg' %}" alt="OwlphaDAO" class="object-cover w-20 h-20 transition duration-500 ease-in-out rounded-full hover:scale-110">
+      <div class="text-xs text-charcoal opacity-60">OwlphaDAO Building the Future of Work together.</div>
+    </footer>
+
+    <!-- SCRIPTS (keep at bottom) -->
+    <script src="{% static 'js/main.js' %}" type="module"></script>
+    <script>
+      document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', e => {
+          const href = link.getAttribute('href');
+          if (href && href.endsWith('.html')) {
+            e.preventDefault();
+            document.body.classList.add('fade-out');
+            setTimeout(() => window.location.href = href, 300);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

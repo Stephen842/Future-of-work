@@ -1,0 +1,297 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
+  <meta name = "robots" content = "index, follow">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon_io/apple-touch-icon.png" %}">
+  <link rel="icon" sizes="192x192" href="{% static "favicon_io/android-chrome-192x192.png" %}">
+  <link rel="icon" sizes="256x256" href="{% static "favicon_io/android-chrome-512x512.png" %}">
+  <link rel="icon" type="image/x-icon" href="{% static "favicon_io/favicon.ico" %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon_io/favicon-32x32.png" %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon_io/favicon-16x16.png" %}">
+  <link rel="manifest" href="{% static "favicon_io/site.webmanifest" %}">
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#f6c960',
+            offwhite: '#f8f8f8',
+            charcoal: '#1a1a1a',
+            accentgray: '#2d2d2d',
+          },
+          fontFamily: {
+            inter: ["Inter", "sans-serif"],
+            poppins: ["Poppins", "sans-serif"],
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', 'Poppins', sans-serif; }
+    html { scroll-behavior: smooth; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    .animate-fadeIn { animation: fadeIn 0.9s cubic-bezier(.6,.2,.2,1) both; }
+  </style>
+  <title>{{ title }}</title>
+</head>
+<body class="bg-charcoal min-h-screen text-offwhite">
+  <a href="index.html" class="fixed top-4 right-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Home</a>
+  <header class="bg-gradient-to-b from-charcoal to-accentgray/40 px-4 pt-7 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <img src="https://svgshare.com/i/12nm.svg" alt="OwlphaDAO Logo" class="h-9 w-auto"/>
+      <div>
+        <span class="block font-poppins font-bold text-lg text-gold">Future of Work</span>
+        <span id="dashboard-welcome" class="block text-sm text-offwhite font-inter">Welcome back, <span id="userName">User</span></span>
+      </div>
+    </div>
+      <div class="flex items-center gap-3">
+        <img id="topbar-avatar" src="" class="w-10 h-10 rounded-full border-2 border-gold object-cover mr-2 cursor-pointer" alt="avatar" />
+      <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">Pod</span>
+      <a href="profile.html" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">Profile</a>
+      <div class="relative ml-3">
+        <button id="notification-bell" class="text-gold text-2xl focus:outline-none relative">
+          <span>🔔</span>
+          <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1 hidden">0</span>
+        </button>
+        <div id="notifications-modal" class="hidden absolute right-0 mt-3 w-80 bg-accentgray border border-gold/10 rounded-lg shadow-lg z-50 p-3">
+          <div class="font-bold text-gold mb-2">Notifications</div>
+          <div id="notification-list" class="space-y-2"></div>
+          <button id="clear-notifications" class="text-xs text-red-300 mt-3">Clear all notifications</button>
+        </div>
+      </div>
+      <a id="admin-link" href="admin.html" class="hidden text-red-400 hover:text-red-300 transition font-bold text-sm font-poppins border-l border-gold/20 pl-3">Admin →</a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto pt-7 pb-16 px-2 md:px-4 flex flex-col lg:flex-row gap-6 lg:gap-10">
+    <section class="flex-1 flex flex-col gap-4 md:gap-8">
+      <!-- Growth Loop Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+        <a href="lessons.html" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
+          <span class="text-4xl mb-2">🧠</span>
+          <span class="font-bold font-poppins text-gold mb-1">Learn</span>
+          <span class="text-sm font-inter text-offwhite">Workshops & mentoring</span>
+        </a>
+        <a href="#do" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
+          <span class="text-4xl mb-2">⚙️</span>
+          <span class="font-bold font-poppins text-gold mb-1">Do</span>
+          <span class="text-sm font-inter text-offwhite">Projects & collaboration</span>
+        </a>
+        <a href="#earn" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
+          <span class="text-4xl mb-2">💰</span>
+          <span class="font-bold font-poppins text-gold mb-1">Earn</span>
+          <span class="text-sm font-inter text-offwhite">Gigs, bounties, rewards</span>
+        </a>
+      </div>
+      <!-- Progress + Level -->
+      <section class="bg-charcoal/60 rounded-2xl py-7 px-6 shadow-lg flex flex-col gap-4 items-center border border-gold/5">
+        <div class="flex items-center w-full gap-3">
+          <span class="text-sm text-gold font-poppins font-bold whitespace-nowrap">XP:</span>
+          <div class="flex-1 h-4 bg-accentgray/60 rounded-full overflow-hidden">
+            <div id="progressBar" class="h-full bg-gradient-to-r from-gold/80 via-gold to-gold/30 transition-all duration-700" style="width:0%"></div>
+          </div>
+          <span id="xpValue" class="text-gold text-xs font-bold font-mono ml-2">0/100</span>
+        </div>
+        <div class="flex justify-between items-center w-full mt-2">
+          <span class="text-xs font-poppins">Level: <span id="levelValue">1</span></span>
+          <button id="completeLessonBtn" class="bg-gold text-charcoal font-bold px-6 py-2 rounded-full shadow hover:scale-105 transition focus:ring-2 ring-gold/40">Mark Lesson Complete</button>
+        </div>
+      </section>
+      <!-- NEW: Your Growth Journey -->
+      <section id="progress-section" class="p-6 rounded-2xl bg-accentgray/60 backdrop-blur-lg mt-4 animate-fadeIn border border-gold/10 shadow-lg">
+        <h2 class="text-2xl font-bold mb-5 text-gold font-poppins">Your Growth Journey</h2>
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between mb-2">
+              <p class="font-semibold text-gold">Learn</p>
+              <span id="learn-xp" class="text-xs text-accentgray">0%</span>
+            </div>
+            <div class="w-full bg-charcoal rounded-full h-4 overflow-hidden">
+              <div id="learn-progress" class="h-4 bg-gradient-to-r from-gold/90 via-gold to-gold/50 transition-all duration-700 shadow-[0_0_10px_rgba(246,201,96,0.35)]" style="width:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-2">
+              <p class="font-semibold text-gold">Do</p>
+              <span id="do-xp" class="text-xs text-accentgray">0%</span>
+            </div>
+            <div class="w-full bg-charcoal rounded-full h-4 overflow-hidden">
+              <div id="do-progress" class="h-4 bg-gradient-to-r from-gold/90 via-gold to-gold/50 transition-all duration-700 shadow-[0_0_10px_rgba(246,201,96,0.35)]" style="width:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-2">
+              <p class="font-semibold text-gold">Earn</p>
+              <span id="earn-xp" class="text-xs text-accentgray">0%</span>
+            </div>
+            <div class="w-full bg-charcoal rounded-full h-4 overflow-hidden">
+              <div id="earn-progress" class="h-4 bg-gradient-to-r from-gold/90 via-gold to-gold/50 transition-all duration-700 shadow-[0_0_10px_rgba(246,201,96,0.35)]" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-between items-center pt-4 border-t border-gold/10">
+          <p id="xp-display" class="text-base font-medium text-gold">Total XP: 0</p>
+          <button id="complete-task" class="bg-gold text-charcoal font-semibold py-2 px-6 rounded-full hover:scale-105 transition shadow">Complete Task</button>
+        </div>
+      </section>
+      <!-- NEW: Leaderboard & Pod Performance -->
+      <section id="leaderboard-section" class="mb-6 mt-6 p-6 rounded-2xl bg-accentgray/70 border border-gold/10 shadow">
+        <h3 class="text-xl font-poppins text-gold font-bold mb-3">🏆 Leaderboard</h3>
+        <div id="leaderboard-list" class="space-y-2 mb-3 overflow-x-auto">
+          <table class="w-full text-sm text-offwhite">
+            <thead>
+              <tr>
+                <th class="text-left">Rank</th>
+                <th class="text-left">User</th>
+                <th class="text-right">XP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>User A</td>
+                <td class="text-right">1200</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>User B</td>
+                <td class="text-right">950</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>User C</td>
+                <td class="text-right">700</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h4 class="text-lg font-poppins text-gold font-semibold mt-6 mb-2">Pod Performance</h4>
+        <div id="pod-performance-list" class="text-sm overflow-x-auto">
+          <table class="w-full text-sm text-offwhite">
+            <thead>
+              <tr>
+                <th class="text-left">User</th>
+                <th class="text-right">XP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>User A</td>
+                <td class="text-right">1200</td>
+              </tr>
+              <tr>
+                <td>User B</td>
+                <td class="text-right">950</td>
+              </tr>
+              <tr>
+                <td>User C</td>
+                <td class="text-right">700</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+    <!-- Sidebar/Bottom (Goals, Sessions, CTA) -->
+    <aside class="w-full lg:w-[320px] flex flex-col gap-4 md:gap-8">
+      <!-- Badges Section -->
+      <div class="bg-accentgray/70 rounded-2xl px-6 py-7 shadow flex flex-col items-center mb-2 border border-gold/10">
+        <span class="text-lg font-bold font-poppins text-gold mb-1">🏆 Your Badges</span>
+        <div id="badges-container" class="flex gap-3 mt-3">
+          <span class="text-2xl opacity-30" title="Bronze - 25 XP">🥉</span>
+          <span class="text-2xl opacity-30" title="Silver - 50 XP">🥈</span>
+          <span class="text-2xl opacity-30" title="Gold - 75 XP">🥇</span>
+        </div>
+      </div>
+      <!-- Streaks -->
+      <div class="bg-accentgray/70 rounded-2xl px-6 py-6 shadow flex flex-col items-center mb-4 border border-gold/10">
+        <span class="text-lg font-bold text-gold font-poppins mb-1">🔥 Streaks</span>
+        <span class="text-xs text-offwhite">Current Daily Streak: <span id="current-streak">0</span> days</span>
+        <span class="text-xs text-offwhite">Best: <span id="best-streak">0</span></span>
+        <span class="text-xs text-offwhite">This week: <span id="weekly-streak">0</span>/7</span>
+        <span id="streak-bonus" class="mt-2 text-xs text-gold font-bold"></span>
+      </div>
+      <!-- Weekly Challenges -->
+      <div class="bg-gradient-to-br from-gold/20 to-gold/5 rounded-2xl px-6 py-6 shadow flex flex-col border border-gold/20">
+        <span class="text-lg font-bold text-gold font-poppins mb-3">🎯 Weekly Challenge</span>
+        <div id="weekly-challenge" class="space-y-2 mb-3">
+          <p class="text-sm text-offwhite font-inter">Complete 2 lessons this week</p>
+          <div class="flex justify-between text-xs text-accentgray">
+            <span>Progress</span>
+            <span id="challenge-progress">0/2</span>
+          </div>
+          <div class="w-full bg-charcoal/60 h-2 rounded-full overflow-hidden">
+            <div id="challenge-bar" class="h-full bg-gold transition-all duration-700" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Next Goal -->
+      <div class="bg-accentgray/70 rounded-2xl px-6 py-7 shadow flex flex-col items-center mb-2 border border-gold/10">
+        <span class="text-lg font-bold font-poppins text-gold mb-1">Your Next Goal</span>
+        <span id="nextGoal" class="text-sm text-offwhite font-inter text-center">Loading...</span>
+      </div>
+      <div class="bg-gold/20 rounded-2xl px-6 py-6 shadow flex flex-col items-center border border-gold/20">
+        <span class="text-sm font-bold text-gold font-poppins mb-2">Upcoming Session</span>
+        <span class="text-offwhite text-xs font-inter mb-3">“Unlock Web3 Opportunities”<br>Fri 4pm WAT</span>
+        <a href="#" class="bg-gold text-charcoal px-5 py-2 rounded-full shadow hover:bg-gold/80 transition font-bold text-xs">Add to Calendar</a>
+      </div>
+      <div class="flex flex-col items-center">
+        <a href="pricing.html" class="inline-block w-full bg-gradient-to-r from-gold via-yellow-200 to-gold text-charcoal font-bold font-poppins px-5 py-3 rounded-full shadow hover:scale-105 transition text-center">Upgrade Plan</a>
+      </div>
+      <div class="flex flex-col items-center mt-2">
+        <button id="feedback-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold font-poppins px-5 py-3 rounded-full shadow hover:scale-105 transition text-center">💬 Give Feedback</button>
+      </div>
+    </aside>
+  </main>
+  <!-- Feedback Modal -->
+  <div id="feedback-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/95 backdrop-blur-sm">
+    <div class="bg-accentgray rounded-2xl max-w-md w-full shadow-2xl border border-gold/20 p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-poppins font-bold text-gold">💬 We'd Love Your Feedback!</h2>
+        <button id="close-feedback" class="text-gold hover:text-offwhite transition">✕</button>
+      </div>
+      <form id="feedback-form" class="space-y-4">
+        <div>
+          <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">How was your experience?</label>
+          <div class="flex gap-2">
+            <button type="button" class="feedback-rating flex-1 py-2 rounded-lg border-2 border-transparent hover:border-gold transition" data-rating="1">😞</button>
+            <button type="button" class="feedback-rating flex-1 py-2 rounded-lg border-2 border-transparent hover:border-gold transition" data-rating="2">😐</button>
+            <button type="button" class="feedback-rating flex-1 py-2 rounded-lg border-2 border-transparent hover:border-gold transition" data-rating="3">🙂</button>
+            <button type="button" class="feedback-rating flex-1 py-2 rounded-lg border-2 border-transparent hover:border-gold transition" data-rating="4">😊</button>
+            <button type="button" class="feedback-rating flex-1 py-2 rounded-lg border-2 border-transparent hover:border-gold transition" data-rating="5">😍</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Comments (optional)</label>
+          <textarea id="feedback-comment" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite font-inter resize-none" rows="3" placeholder="Share your thoughts..."></textarea>
+        </div>
+        <button type="submit" class="w-full bg-gold text-charcoal font-bold py-3 rounded-full hover:scale-105 transition shadow-lg">Submit Feedback</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="confetti" class="fixed inset-0 pointer-events-none z-50 hidden"></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+  <script src="js/dashboard.js"></script>
+  <script>
+    // Show admin link only if user is authenticated as admin
+    const isAdmin = sessionStorage.getItem('adminAuth') === 'true';
+    if (isAdmin) {
+      document.getElementById('admin-link').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

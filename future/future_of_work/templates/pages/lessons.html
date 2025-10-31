@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lessons | Future of Work</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#f6c960',
+            offwhite: '#f8f8f8',
+            charcoal: '#1a1a1a',
+            accentgray: '#2d2d2d',
+          },
+          fontFamily: {
+            inter: ["Inter", "sans-serif"],
+            poppins: ["Poppins", "sans-serif"],
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { font-family: 'Inter', 'Poppins', sans-serif; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-charcoal min-h-screen text-offwhite">
+  <a href="dashboard.html" class="fixed top-4 left-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Dashboard</a>
+  <header class="bg-gradient-to-b from-charcoal to-accentgray/40 px-4 pt-7 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl md:text-3xl font-poppins font-bold text-gold">🧠 Learn</h1>
+      <p class="text-sm text-accentgray font-inter">Master digital skills, one lesson at a time.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">Pod</span>
+      <a href="profile.html" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">
+        Profile →
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto pt-7 pb-16 px-2 md:px-4">
+    <div id="lessons-grid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </main>
+
+  <!-- Lesson Modal -->
+  <div id="lesson-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/95 backdrop-blur-sm">
+    <div class="bg-accentgray rounded-2xl max-w-full w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gold/20 px-2 sm:max-w-2xl">
+      <div class="relative p-6">
+        <button id="close-modal" class="absolute top-6 right-6 text-gold hover:text-offwhite transition">✕</button>
+        <div id="modal-content">
+          <!-- Dynamic content from JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <script src="js/lessons.js"></script>
+</body>
+</html>
+
