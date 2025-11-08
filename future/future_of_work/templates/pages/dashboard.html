@@ -8,15 +8,16 @@
   <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
   <meta name = "robots" content = "index, follow">
 
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon_io/apple-touch-icon.png" %}">
-  <link rel="icon" sizes="192x192" href="{% static "favicon_io/android-chrome-192x192.png" %}">
-  <link rel="icon" sizes="256x256" href="{% static "favicon_io/android-chrome-512x512.png" %}">
-  <link rel="icon" type="image/x-icon" href="{% static "favicon_io/favicon.ico" %}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon_io/favicon-32x32.png" %}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon_io/favicon-16x16.png" %}">
-  <link rel="manifest" href="{% static "favicon_io/site.webmanifest" %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+  <link rel="icon" sizes="192x192" href="{% static 'favicon_io/android-chrome-192x192.png' %}">
+  <link rel="icon" sizes="256x256" href="{% static 'favicon_io/android-chrome-512x512.png' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicon_io/site.webmanifest' %}">
 
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>{{ title }}</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -45,22 +46,19 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
     .animate-fadeIn { animation: fadeIn 0.9s cubic-bezier(.6,.2,.2,1) both; }
   </style>
-  <title>{{ title }}</title>
 </head>
 <body class="bg-charcoal min-h-screen text-offwhite">
-  <a href="index.html" class="fixed top-4 right-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Home</a>
   <header class="bg-gradient-to-b from-charcoal to-accentgray/40 px-4 pt-7 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <div class="flex items-center gap-4">
-      <img src="https://svgshare.com/i/12nm.svg" alt="OwlphaDAO Logo" class="h-9 w-auto"/>
       <div>
-        <span class="block font-poppins font-bold text-lg text-gold">Future of Work</span>
-        <span id="dashboard-welcome" class="block text-sm text-offwhite font-inter">Welcome back, <span id="userName">User</span></span>
+        <span class="block font-poppins font-bold text-lg text-gold"><a href="/"> Future of Work</a></span>
+        <span id="dashboard-welcome" class="block text-sm text-offwhite font-inter">Welcome back <span id="userName">{{ request.user.get_full_name|default:request.user.username }}</span></span>
       </div>
     </div>
       <div class="flex items-center gap-3">
         <img id="topbar-avatar" src="" class="w-10 h-10 rounded-full border-2 border-gold object-cover mr-2 cursor-pointer" alt="avatar" />
       <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">Pod</span>
-      <a href="profile.html" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">Profile</a>
+      <a href="{% url 'profile' %}" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">Profile</a>
       <div class="relative ml-3">
         <button id="notification-bell" class="text-gold text-2xl focus:outline-none relative">
           <span>🔔</span>
@@ -80,7 +78,7 @@
     <section class="flex-1 flex flex-col gap-4 md:gap-8">
       <!-- Growth Loop Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-        <a href="lessons.html" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
+        <a href="{% url 'lesson' %}" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
           <span class="text-4xl mb-2">🧠</span>
           <span class="font-bold font-poppins text-gold mb-1">Learn</span>
           <span class="text-sm font-inter text-offwhite">Workshops & mentoring</span>
@@ -103,10 +101,10 @@
           <div class="flex-1 h-4 bg-accentgray/60 rounded-full overflow-hidden">
             <div id="progressBar" class="h-full bg-gradient-to-r from-gold/80 via-gold to-gold/30 transition-all duration-700" style="width:0%"></div>
           </div>
-          <span id="xpValue" class="text-gold text-xs font-bold font-mono ml-2">0/100</span>
+          <span id="xpValue" class="text-gold text-xs font-bold font-mono ml-2">{{ profile.xp }}/100</span>
         </div>
         <div class="flex justify-between items-center w-full mt-2">
-          <span class="text-xs font-poppins">Level: <span id="levelValue">1</span></span>
+          <span class="text-xs font-poppins">Level: <span id="levelValue">{{ profile.level|default:1 }}</span></span>
           <button id="completeLessonBtn" class="bg-gold text-charcoal font-bold px-6 py-2 rounded-full shadow hover:scale-105 transition focus:ring-2 ring-gold/40">Mark Lesson Complete</button>
         </div>
       </section>
@@ -285,7 +283,7 @@
 
   <div id="confetti" class="fixed inset-0 pointer-events-none z-50 hidden"></div>
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
-  <script src="js/dashboard.js"></script>
+  <!--<script src="{% static 'js/dashboard.js' %}"></script> -->
   <script>
     // Show admin link only if user is authenticated as admin
     const isAdmin = sessionStorage.getItem('adminAuth') === 'true';

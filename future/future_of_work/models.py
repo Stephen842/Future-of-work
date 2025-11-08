@@ -2,8 +2,96 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from decimal import Decimal
 from django_countries.fields import CountryField
+from django.contrib.auth import get_user_model
+
 
 # Create your models here.
+User = get_user_model()
+
+class Badge(models.Model):
+    BADGE_TIER_CHOICES = [
+        ("Diamond", "Diamond"),
+        ("Platinum", "Platinum"),
+        ("Gold", "Gold"),
+        ("Silver", "Silver"),
+        ("Bronze", "Bronze"),
+        ("Iron", "Iron"),
+    ]
+       
+    name = models.CharField(max_length=50, choices=BADGE_TIER_CHOICES, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class UserProfile(models.Model):
+    POD_CHOICES = [
+        ("Creator", "Creator"),
+        ("Builder", "Builder"),
+        ("Educator", "Educator"),
+        ("Community", "Community"),
+    ]
+
+    GOAL_CHOICES = [
+        ("Get Skilled", "Get Skilled"),
+        ("Build Projects", "Build Projects"),
+        ("Find Work", "Find Work"),
+        ("Collaborate", "Collaborate"),
+    ]
+
+    ### Personal
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+
+    # Future of Work Custom Fields
+    pod = models.CharField(max_length=64, choices=POD_CHOICES, blank=True)
+    goal = models.CharField(max_length=128, choices=GOAL_CHOICES, blank=True)
+
+    # Gamification
+    xp = models.PositiveIntegerField(default=0)
+    level = models.PositiveIntegerField(default=1)
+    completed_lessons = models.PositiveIntegerField(default=0)
+    streak_current = models.PositiveIntegerField(default=0)
+    streak_best = models.PositiveIntegerField(default=0)
+    last_active_day = models.DateField(auto_now_add=True)
+
+    # Breakdown experience
+    xp_learn = models.PositiveIntegerField(default=0)
+    xp_do = models.PositiveIntegerField(default=0)
+    xp_earn = models.PositiveIntegerField(default=0)
+
+    # Badges (Many-to-Many)
+    badges = models.ManyToManyField(Badge, blank=True, related_name="users")
+
+    # Referrals
+    referral_code = models.CharField(max_length=32, blank=True, null=True)
+    referred_by = models.CharField(max_length=32, blank=True, null=True)
+
+
+    # Web3
+    wallet_address = models.CharField(max_length=255, blank=True, null=True)
+    wallet_connected = models.BooleanField(default=False)
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} profile"
+    
+    def update_level(self):
+        self.level = (self.xp // 100) + 1
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Automatically add default badge if user has no badges yet
+        if not self.badges.exists():
+            default_badge = Badge.objects.get(name="Iron")
+            self.badges.add(default_badge)
+    
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class Future_Of_Work(models.Model):
     COURSE_CHOICES = [
         ('', 'Select course type...'),

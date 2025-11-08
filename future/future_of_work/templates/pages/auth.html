@@ -8,15 +8,15 @@
   <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
   <meta name = "robots" content = "index, follow">
 
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon_io/apple-touch-icon.png" %}">
-  <link rel="icon" sizes="192x192" href="{% static "favicon_io/android-chrome-192x192.png" %}">
-  <link rel="icon" sizes="256x256" href="{% static "favicon_io/android-chrome-512x512.png" %}">
-  <link rel="icon" type="image/x-icon" href="{% static "favicon_io/favicon.ico" %}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon_io/favicon-32x32.png" %}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon_io/favicon-16x16.png" %}">
-  <link rel="manifest" href="{% static "favicon_io/site.webmanifest" %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+  <link rel="icon" sizes="192x192" href="{% static 'favicon_io/android-chrome-192x192.png' %}">
+  <link rel="icon" sizes="256x256" href="{% static 'favicon_io/android-chrome-512x512.png' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicon_io/site.webmanifest' %}">
 
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title> {{ title }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
   <style>
@@ -24,9 +24,6 @@
     .fade-in { opacity: 0; animation: fadeIn 1.1s cubic-bezier(.7,.22,.18,1) forwards; }
     @keyframes fadeIn { to { opacity: 1; } }
   </style>
-
-  <title>{{ title }}</title>
-
 </head>
 
 <body class="min-h-screen flex flex-col justify-center items-center px-2">
@@ -47,12 +44,13 @@
       </div>
       
       <!-- Login form, hidden by default -->
-      <form id="user-login-form" class="w-full mt-3 flex flex-col gap-3 hidden">
+      <form method="POST" id="user-login-form" class="w-full mt-3 flex flex-col gap-3 hidden">
+        {% csrf_token %}
         <div class="relative">
-          <input id="login-email" type="email" class="w-full bg-[#1a1a1a] border-2 border-[#f6c96044] outline-none focus:border-[#f6c960] focus:ring-2 focus:ring-[#f6c960] px-4 py-3 rounded-lg text-offwhite placeholder-[#f6c960bb] font-semibold shadow-inner" placeholder="Email address" required />
+          <input id="login-email" type="text" name="identifier" value="{{ form.identifier.value|default_if_none:'' }}" class="w-full bg-[#1a1a1a] border-2 border-[#f6c96044] outline-none focus:border-[#f6c960] focus:ring-2 focus:ring-[#f6c960] px-4 py-3 rounded-lg text-white placeholder-[#f6c960bb] font-semibold shadow-inner" placeholder="Email or Username" required />
         </div>
         <div class="relative">
-          <input id="login-password" type="password" class="w-full bg-[#1a1a1a] border-2 border-[#f6c96044] outline-none focus:border-[#f6c960] focus:ring-2 focus:ring-[#f6c960] px-4 py-3 rounded-lg text-offwhite placeholder-[#f6c960bb] font-semibold shadow-inner" placeholder="Password" required />
+          <input id="login-password" type="password" name="password" class="w-full bg-[#1a1a1a] border-2 border-[#f6c96044] outline-none focus:border-[#f6c960] focus:ring-2 focus:ring-[#f6c960] px-4 py-3 rounded-lg text-white placeholder-[#f6c960bb] font-semibold shadow-inner" placeholder="Password" required />
         </div>
         <label class="text-xs flex items-center gap-1 mt-1 text-[#f6c960] font-semibold"><input type="checkbox" id="login-remember-me" class="mr-1 rounded"> Remember Me</label>
         <button type="submit" class="w-full bg-[#f6c960] text-[#1a1a1a] font-bold px-4 py-2 rounded-full hover:scale-105 transition-all text-base">Log In</button>
@@ -72,7 +70,6 @@
   </main>
   <script>
     const onboardingUrl = "{% url 'onboarding' %}";
-    window.dashboardUrl = "{% url 'dashboard' %}";
   </script>
   <script src="{% static 'js/auth.js' %}"></script>
 </body>

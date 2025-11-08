@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,15 +9,16 @@
   <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
   <meta name = "robots" content = "index, follow">
 
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon_io/apple-touch-icon.png" %}">
-  <link rel="icon" sizes="192x192" href="{% static "favicon_io/android-chrome-192x192.png" %}">
-  <link rel="icon" sizes="256x256" href="{% static "favicon_io/android-chrome-512x512.png" %}">
-  <link rel="icon" type="image/x-icon" href="{% static "favicon_io/favicon.ico" %}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon_io/favicon-32x32.png" %}">
-  <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon_io/favicon-16x16.png" %}">
-  <link rel="manifest" href="{% static "favicon_io/site.webmanifest" %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+  <link rel="icon" sizes="192x192" href="{% static 'favicon_io/android-chrome-192x192.png' %}">
+  <link rel="icon" sizes="256x256" href="{% static 'favicon_io/android-chrome-512x512.png' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicon_io/site.webmanifest' %}">
 
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title> {{ title }}</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -43,8 +45,6 @@
     body { font-family: 'Inter', 'Poppins', sans-serif; }
     html { scroll-behavior: smooth; }
   </style>
-
-  <title>{{ title }}</title>
 </head>
 <body class="bg-charcoal min-h-screen text-offwhite">
   <a href="/" class="fixed top-4 right-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Home</a>
@@ -115,34 +115,71 @@
         <button id="next-to-step-3" class="bg-gold text-charcoal font-bold px-6 py-2 rounded-full shadow-lg hover:scale-105 transition" disabled>Next</button>
       </div>
     </section>
+
     <!-- STEP 3: User Details -->
     <section id="step-3" class="hidden fadeinstep step-section">
       <h2 class="font-poppins text-xl font-bold mb-3 text-offwhite">Tell us about you</h2>
-      <form id="onboarding-form" class="flex flex-col gap-4">
-        <input id="full-name" type="text" placeholder="Full Name" class="bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite font-inter focus:border-gold focus:ring-gold focus:outline-none transition" required>
-        <input id="email" type="email" placeholder="Email Address" class="bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite font-inter focus:border-gold focus:ring-gold focus:outline-none transition" required>
-        <!-- Password fields -->
-        <input id="onboarding-password" type="password" placeholder="Password" class="bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite font-inter mt-3" required>
-        <input id="onboarding-password-confirm" type="password" placeholder="Confirm Password" class="bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite font-inter mb-2" required>
-        <span class="text-xs text-gray-100">Min 3 characters. Make it memorable!</span>
-        <div id="onboarding-pw-error" class="text-xs text-red-400 mb-2 hidden"></div>
-        <label class="block text-sm font-semibold text-gold mt-4 mb-1">Referral code (optional)</label>
-        <input id="referral-code-input" type="text" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite mb-2" placeholder="Enter a code if you have one">
-        <span class="block text-xs text-gray-100 mb-2">If a friend invited you, enter their code to reward both of you!</span>
-        <div class="flex items-center gap-2 mt-2">
-          <button id="connect-wallet-later" type="button" class="text-xs font-bold text-gold px-3 py-2 rounded-md border border-gold bg-transparent hover:bg-gold/10 transition">Connect Wallet Later</button>
+      <form id="onboarding-form" method="POST" action="{% url 'onboarding_complete' %}" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Hidden fields -->
+        <input type="hidden" id="selected-pod" name="pod">
+        <input type="hidden" id="selected-goal" name="goal">
+
+        <!-- Basic Info -->
+        <div class="space-y-3">
+          <input id="name" name="name" type="text" placeholder="Full Name" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition" required>
+
+          <input id="username" name="username" type="text" placeholder="User Name" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition" required>
+
+          <input id="email" name="email" type="email" placeholder="Email Address" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition" required>
+
+          <div class="w-full">
+            {{ form.country|add_class:'w-full bg-accentgray/60 border border-accentgray text-gray-100 rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition'}}
+          </div>
+        </div>
+
+        <!-- Password Section -->
+        <div class="space-y-2">
+          <input id="onboarding-password" name="password" type="password" placeholder="Password" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition" required>
+
+          <input id="onboarding-password-confirm" name="password_confirm" type="password" placeholder="Confirm Password" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition" required>
+
+          <span class="text-xs text-gray-100 block">Min 8 characters. Make it memorable!</span>
+          <div id="onboarding-pw-error" class="text-xs text-red-400 hidden"></div>
+        </div>
+
+        <!-- Referral Section -->
+        <div class="space-y-1">
+          <label class="block text-sm font-semibold text-gold">Referral code (optional)</label>
+          <input id="referral-code-input" name="referred_by" type="text" placeholder="Enter a code if you have one" class="w-full bg-accentgray/60 border border-accentgray rounded-lg px-4 py-2 text-offwhite focus:border-gold focus:ring-gold focus:outline-none transition">
+
+          <span class="text-xs text-gray-100 block">
+            If a friend invited you, enter their code to reward both of you!
+          </span>
+        </div>
+
+        <!-- Wallet Section -->
+        <div class="flex items-center gap-2">
+          <button id="connect-wallet-later" type="button" class="text-xs font-bold text-gold px-3 py-2 rounded-md border border-gold hover:bg-gold/10 transition">
+            Connect Wallet Later
+          </button>
           <span class="text-xs text-gray-100">Optional</span>
         </div>
-        <div class="flex justify-between mt-4">
-          <button id="back-to-step-2" type="button" class="text-gold font-bold px-6 py-2 rounded-full border border-gold hover:bg-gold/20 transition">Back</button>
-          <button id="complete-onboarding" type="submit" class="bg-gold text-charcoal font-bold px-6 py-2 rounded-full shadow-lg hover:scale-105 transition">Complete Setup</button>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between pt-3">
+          <button id="back-to-step-2" type="button" class="text-gold font-bold px-6 py-2 rounded-full border border-gold hover:bg-gold/20 transition">
+            Back
+          </button>
+
+          <button id="complete-onboarding" type="submit" class="bg-gold text-charcoal font-bold px-6 py-2 rounded-full shadow-lg hover:scale-105 transition">
+            Complete Setup
+          </button>
         </div>
       </form>
     </section>
   </main>
-  <script>
-    window.dashboardUrl = "{% url 'dashboard' %}";
-  </script>
   <script src="{% static 'js/onboarding.js' %}"></script>
 </body>
 </html>

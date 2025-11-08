@@ -352,12 +352,14 @@ function updateNotificationUI() {
     list.innerHTML = arr.slice().reverse().map(n=>`<div class='bg-charcoal/60 rounded px-3 py-2'><span class='font-bold text-gold mr-2'>${n.type==='xp'?'⚡':n.type==='badge'?'🏅':n.type==='streak'?'🔥':n.type==='admin'?'🛠️':'🔔'}</span><span>${n.text}</span><span class='block text-xs text-accentgray float-right ml-2'>${n.date}</span></div>`).join('')||'<div class="text-xs text-accentgray">No notifications yet</div>';
   }
 }
+
 // Bell logic
 const bellBtn=document.getElementById('notification-bell'),notifModal=document.getElementById('notifications-modal'),clearBtn=document.getElementById('clear-notifications');
 bellBtn&&bellBtn.addEventListener('click',()=>{notifModal.classList.toggle('hidden');let arr=getNotifications();arr=arr.map(n=>({...n,seen:true}));saveNotifications(arr);updateNotificationUI();});
 clearBtn&&clearBtn.addEventListener('click',()=>{saveNotifications([]);updateNotificationUI();notifModal.classList.add('hidden');});
 window.addNotification=addNotification;
 updateNotificationUI();
+
 // --- Tie notifications to events ---
 const prevShowToast=showToast;
 showToast=function(message){prevShowToast(message);if(/XP|challenge|badge|level|streak|certificate|approved|rejected|reward/i.test(message))addNotification('xp',message);};

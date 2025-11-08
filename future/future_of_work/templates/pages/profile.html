@@ -1,10 +1,24 @@
+{% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile Settings | Future of Work</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
+  <meta name = "robots" content = "index, follow">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+  <link rel="icon" sizes="192x192" href="{% static 'favicon_io/android-chrome-192x192.png' %}">
+  <link rel="icon" sizes="256x256" href="{% static 'favicon_io/android-chrome-512x512.png' %}">
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+  <link rel="manifest" href="{% static 'favicon_io/site.webmanifest' %}">
+  <link rel = 'stylesheet' href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'>
+  <link rel = 'stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'>
+    
+  <title>{{ title }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -27,66 +41,96 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="{% static 'style.css' %}">
   <style>
     body { font-family: 'Inter', 'Poppins', sans-serif; }
     html { scroll-behavior: smooth; }
   </style>
 </head>
 <body class="bg-charcoal min-h-screen text-offwhite">
-  <a href="dashboard.html" class="fixed top-4 left-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Dashboard</a>
+  <a href="{% url 'dashboard'%}" class="fixed top-4 left-4 z-50 text-gold underline font-bold hover:opacity-75 transition"> Dashboard </a>
   
   <div class="max-w-full sm:max-w-3xl mx-auto pt-16 pb-16 px-2 md:px-4">
     <h1 class="text-3xl font-poppins font-bold text-gold mb-8">Profile Settings</h1>
     
     <!-- Profile Card -->
     <section class="bg-accentgray/60 rounded-2xl p-6 shadow-lg border border-gold/10 mb-6 backdrop-blur-lg">
-      <h2 class="text-xl font-poppins font-bold text-gold mb-4">Personal Information</h2>
-      
-      <div class="flex flex-col items-center mb-4">
-        <img id="profile-avatar-img" src="" alt="avatar" class="w-20 h-20 rounded-full border-4 border-gold bg-accentgray object-cover mb-2" />
-        <input id="profile-avatar-input" type="file" accept="image/*" class="hidden" />
-        <button id="profile-avatar-upload" class="text-xs mt-1 bg-gold/20 px-3 py-1 rounded-full text-gold font-bold">Change Photo</button>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Full Name</label>
-        <input id="profile-name" type="text" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" placeholder="Enter your name" />
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Email</label>
-        <input id="profile-email" type="email" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" placeholder="your@email.com" />
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Referral Code</label>
-        <div id="profile-user-referral" class="bg-gold/20 rounded px-3 py-2 mb-3 font-mono text-gold flex items-center gap-2"><span></span><button id="copy-referral-btn" class="text-xs px-2 py-1 bg-charcoal/70 text-gold rounded">Copy</button></div>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Select Your Pod</label>
-        <select id="profile-pod" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter focus:border-gold focus:ring-gold focus:outline-none transition">
-          <option value="Creator">Creator</option>
-          <option value="Builder">Builder</option>
-          <option value="Educator">Educator</option>
-          <option value="Community">Community</option>
-        </select>
-      </div>
-      
-      <div class="mb-4">
-        <label class="block text-sm text-accentgray mb-2 font-inter font-semibold">Learning Goal</label>
-        <select id="profile-goal" class="w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter focus:border-gold focus:ring-gold focus:outline-none transition">
-          <option value="Get Skilled">Get Skilled</option>
-          <option value="Build Projects">Build Projects</option>
-          <option value="Find Work">Find Work</option>
-          <option value="Collaborate">Collaborate</option>
-        </select>
-      </div>
-      
-      <button id="save-profile-btn" class="w-full bg-gold text-charcoal font-bold py-3 rounded-full hover:scale-105 transition shadow-lg mb-3">
-        Save Changes
-      </button>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <h2 class="text-xl font-poppins font-bold text-gold mb-4">Personal Information</h2>
+        <div class="flex flex-col items-center mb-4">
+          <div class="relative">
+            {% if profile_form.instance.profile_image %}
+              <img id="profile-image-preview" src="{{ profile_form.instance.profile_image.url }}" class="w-20 h-20 rounded-full object-cover border-4 border-gold shadow">
+            {% else %}
+              <img id="profile-image-preview" src="{% static 'default_pro.jpg' %}" class="w-20 h-20 rounded-full object-cover border-4 border-gold shadow">
+            {% endif %}
+            
+            <input type="file" id="profile_image_input" name="profile_image" class="hidden" accept="image/*">
+
+            <label for="profile_image_input"
+              class="absolute bottom-1 right-1 bg-gray-700 w-7 h-7 flex items-center justify-center rounded-full cursor-pointer hover:bg-gray-500 shadow-md transition">
+              <i class="bx bx-camera text-lg"></i>
+            </label>
+          </div>
+
+          <!-- File name section -->
+          <p id="selected-file-name" class="text-xs text-gold mt-2 hidden"></p>
+          
+          <p class="text-sm text-gray-50 mt-2">Update your profile picture</p>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Full Name</label>
+          <div class="relative">
+            {{ user_form.name|add_class:"w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" }}
+            <i class="bx bx-check-circle absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Username</label>
+          <div class="relative">
+            {{ user_form.username|add_class:"w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" }}
+            <i class="bx bx-check-circle absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600"></i>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Email</label>
+          <div class="relative">
+            {{ user_form.email|add_class:"w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" }}
+            <i class="bx bx-check-circle absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600"></i>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Referral Code</label>
+          <div id="profile-user-referral" class="bg-gold/20 rounded px-3 py-2 mb-3 font-mono text-gold flex items-center gap-2">
+            <span id="referral-text">{{ request.user.profile.referral_code }}</span>
+            <button type="button" id="copy-referral-btn" class="text-xs px-2 py-1 bg-charcoal/70 text-gold rounded">Copy</button>
+          </div>
+        </div>
+
+
+        <div>
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Select Your Pod</label>
+          <div class="relative">
+            {{ profile_form.pod|add_class:"w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" }}  
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Learning Goal</label>
+          <div class="relative">
+            {{ profile_form.goal|add_class:"w-full bg-charcoal/60 border border-accentgray rounded-lg px-4 py-3 text-offwhite font-inter placeholder-accentgray focus:border-gold focus:ring-gold focus:outline-none transition" }}  
+          </div>
+        </div>
+        
+        <button type="submit" id="save-profile-btn" class="w-full bg-gold text-charcoal font-bold py-3 rounded-full hover:scale-105 transition shadow-lg mt-3 mb-3">
+          Save Changes
+        </button>
+      </form>
     </section>
     
     <!-- Stats Card -->
@@ -94,38 +138,45 @@
       <h2 class="text-xl font-poppins font-bold text-gold mb-4">Your Progress</h2>
       <div class="grid grid-cols-2 gap-4">
         <div class="bg-charcoal/60 rounded-lg p-4 text-center">
-          <p class="text-2xl font-bold text-gold font-mono" id="total-xp">0</p>
-          <p class="text-xs text-accentgray font-inter">Total XP</p>
+          <p class="text-2xl font-bold text-gold font-mono" id="total-xp">{{request.user.profile.xp}}</p>
+          <p class="text-xs text-gray-50 font-inter">Total XP</p>
         </div>
         <div class="bg-charcoal/60 rounded-lg p-4 text-center">
-          <p class="text-2xl font-bold text-gold font-mono" id="user-level">1</p>
-          <p class="text-xs text-accentgray font-inter">Level</p>
+          <p class="text-2xl font-bold text-gold font-mono" id="user-level">{{ request.user.profile.level }}</p>
+          <p class="text-xs text-gray-50 font-inter">Level</p>
         </div>
         <div class="bg-charcoal/60 rounded-lg p-4 text-center">
-          <p class="text-2xl font-bold text-gold font-mono" id="completed-lessons">0</p>
-          <p class="text-xs text-accentgray font-inter">Lessons</p>
+          <p class="text-2xl font-bold text-gold font-mono" id="completed-lessons">{{ request.user.profile.completed_lessons }}</p>
+          <p class="text-xs text-gray-50 font-inter">Lessons</p>
         </div>
         <div class="bg-charcoal/60 rounded-lg p-4 text-center">
-          <p class="text-2xl font-bold text-gold font-mono" id="user-pod-badge">Pod</p>
-          <p class="text-xs text-accentgray font-inter">Pod</p>
+          <p class="text-2xl font-bold text-gold font-mono" id="user-pod-badge">{{ request.user.profile.get_pod_display }}</p>
+          <p class="text-xs text-gray-50 font-inter">Pod</p>
         </div>
       </div>
     </section>
+
+    <div class="mb-4">
+      <label class="block text-sm text-gray-50 mb-2 font-inter font-semibold">Referred By</label>
+      <div id="profile-user-referral" class="bg-gold/20 rounded px-3 py-2 mb-3 font-mono text-gold flex items-center gap-2">
+        <span id="referred-text">{{ request.user.profile.referred_by}}</span>
+        <button type="button" id="copy-referred-btn" class="text-xs px-2 py-1 bg-charcoal/70 text-gold rounded">Copy</button>
+      </div>
+    </div>
     
     <!-- Logout Button -->
     <section class="bg-accentgray/60 rounded-2xl p-6 shadow-lg border border-red-500/20 backdrop-blur-lg">
       <h2 class="text-xl font-poppins font-bold text-red-400 mb-4">Account Actions</h2>
-      <button id="logout-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-full transition shadow-lg">
+      <a href="{% url 'logout' %}" id="logout-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-full transition shadow-lg block text-center">
         Log Out
-      </button>
-      <p class="text-xs text-accentgray mt-3 text-center">This will clear your progress and redirect you to the homepage</p>
+      </a>
     </section>
   </div>
   
   <!-- Toast Container -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
-  
-  <script src="js/profile.js"></script>
+
+  <script src="{% static 'js/profile.js' %}"></script>
 </body>
 </html>
 

@@ -13,8 +13,17 @@ from django.contrib import messages
 from django.db.models import Count, Sum, Q
 from django.core.paginator import Paginator
 
-from .models import  Future_Of_Work
-from .forms import FutureOfWorkForm
+from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
+from django.utils.crypto import get_random_string
+import json
+from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout, update_session_auth_hash
+
+from .models import UserProfile, Future_Of_Work
+from .forms import OnboardingForm, SigninForm, UserForm, UserProfileForm, FutureOfWorkForm
+
+
+User = get_user_model()
 
 def landing_page(request):
     context = {
@@ -23,22 +32,163 @@ def landing_page(request):
     return render(request, 'pages/Future_landing.html', context)
 
 def auth_page(request):
+    ''''
+    Handles user sign-in using either email or username.
+    If already authenticated, redirects to the home page.
+    On valid form submission, attempts authentication and logs the user in.
+    If authentication fails, displays an error message.
+    '''
+    if request.user.is_authenticated:
+        # Redirect to dashboard if user is already logged in
+        profile = request.user.profile
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = SigninForm(request.POST)
+        if form.is_valid():
+            identifier = form.cleaned_data['identifier']
+            password = form.cleaned_data['password']
+
+            # Try authenticating by username or email
+            user = authenticate(request, username=identifier, password=password)
+
+            if user:
+                auth_login(request, user)
+                next_url = request.GET.get('next')
+                if next_url:
+                    return redirect(next_url)
+                return redirect('dashboard')
+            else:
+                messages.error(request, "Invalid credentials. Please check and try again.")
+
+    else:
+        form = SigninForm()
+
     context = {
+        'form': form,
         'title': 'Future Of Work | Login or Register',
     }
     return render(request, 'pages/auth.html', context)
 
+def logout(request):
+    '''
+    Logs out the current user while preserving session data (if any non-auth-related data exists).
+    After logout, the user is redirected to the home page.
+    '''
+    auth_logout(request)
+    return redirect('home')
+
 def onboarding_page(request):
+    if request.user.is_authenticated:
+        # Redirect to dashboard if user is already logged in
+        profile = request.user.profile
+        return redirect('dashboard')
+    
+    form = OnboardingForm()
     context = {
+        'form': form,
         'title': 'Onboarding | Future of Work by OwlphaDAO',
     }
     return render(request, 'pages/onboarding.html', context)
 
+def onboarding_complete(request):
+    if request.method != "POST":
+        return redirect('onboarding')
+    form = OnboardingForm(request.POST)
+
+    if not form.is_valid():
+        context = {
+            'form': form,
+            'title': 'Onboarding | Future of Work by OwlphaDAO',
+        }
+        return render(request, 'pages/onboarding.html', context)
+
+    data = form.cleaned_data
+  
+    # create Django user
+    user = User.objects.create_user(
+        name=data['name'],
+        username=data['username'], 
+        email=data['email'], 
+        country=data['country'],
+        password=data['password']
+    )
+
+    # create user profile
+    # generate a referral code
+    referral_code = get_random_string(8).upper()
+    UserProfile.objects.create(
+        user=user,
+        pod=data['pod'],
+        goal=data['goal'],
+        referral_code=referral_code,
+        referred_by=data.get('referred_by') or None,
+        wallet_connected=data.get('wallet', False)
+    )
+
+    # log user in
+    login(request, user, backend='account.BackendAuth.CustomAuthBackend')
+
+    messages.success(request, "Welcome! Your account has been created successfully.")
+    return redirect(reverse('dashboard'))
+
+@login_required
 def dashboard_page(request):
+    user = request.user
+    profile = user.profile
+
+    # Leaderboard - top 5 users by XP
+    leaderboard = UserProfile.objects.order_by('-xp')[:5]
+
+    # Pod performance - total XP of users in same pod
+    pod_performance = None
+    if profile.pod:
+        pod_performance = UserProfile.objects.filter(pod=profile.pod).aggregate(total_xp=Sum('xp'))['total_xp'] or 0
+
+
     context = {
+        'user': user,
+        'profile': profile,
+        'leaderboard': leaderboard,
+        'pod_performance': pod_performance,
         'title': 'Dashboard | Future of Work',
     }
     return render(request, 'pages/dashboard.html', context)
+
+@login_required
+def profile_page(request):
+    user = request.user
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=profile)
+       
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+
+            messages.success(request, 'Profile updated successfully')
+            return redirect('profile')
+        
+    else:
+        user_form = UserForm(instance=user)
+        profile_form = UserProfileForm(instance=profile)
+
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'title': 'Profile Settings | Future of Work',
+    }
+    return render(request, 'pages/profile.html', context)
+
+def lesson_page(request):
+
+    context = {
+        'title': 'Lessons | Future of Work',
+    }
+    return render(request, 'pages/lessons.html', context)
+
 
 # Create your views here.
 def future_of_work(request):
