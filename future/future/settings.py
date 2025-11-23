@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-*l3p$dut(y2d9-v#e)as)lu%25tmj@-8&u%&an65!!h1z+u*9y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -46,7 +46,13 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'django_browser_reload',
     'django.contrib.humanize',
+    'embed_video',
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://99b68a73a17f.ngrok-free.app',
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,6 +70,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'future.urls'
 
 AUTH_USER_MODEL = 'account.User'
+
+SITE_ID = 1
 
 AUTHENTICATION_BACKENDS = [
     #This is for the custom Auth backend for the entire project

@@ -1,10 +1,5 @@
 // js/dashboard.js
 
-// Validation: if userName or userPod not set, redirect to onboarding
-if(!localStorage.getItem("userName") || !localStorage.getItem("userPod")) {
-  window.location.href = "onboarding.html";
-}
-
 // User Info on Dashboard
 const userName = localStorage.getItem('userName') || 'Learner';
 const userPod = localStorage.getItem('userPod') || 'Pod';

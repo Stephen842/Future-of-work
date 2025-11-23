@@ -18,9 +18,10 @@ from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 import json
 from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout, update_session_auth_hash
+from django.utils import timezone
 
-from .models import UserProfile, Future_Of_Work
-from .forms import OnboardingForm, SigninForm, UserForm, UserProfileForm, FutureOfWorkForm
+from .models import Badge, UserProfile, Lesson, LessonProgress, Waitlist, Future_Of_Work
+from .forms import OnboardingForm, SigninForm, UserForm, UserProfileForm, WaitlistForm, FutureOfWorkForm
 
 
 User = get_user_model()
@@ -97,6 +98,7 @@ def onboarding_complete(request):
     form = OnboardingForm(request.POST)
 
     if not form.is_valid():
+        print(form.errors)
         context = {
             'form': form,
             'title': 'Onboarding | Future of Work by OwlphaDAO',
@@ -182,15 +184,147 @@ def profile_page(request):
     }
     return render(request, 'pages/profile.html', context)
 
+@login_required
 def lesson_page(request):
+    profile = request.user.profile
+
+    pod = profile.pod
+    lessons = Lesson.objects.filter(pod=pod).order_by('order')
+    progress = LessonProgress.objects.filter(user=request.user)
+    completed_ids = {p.lesson_id for p in progress if p.completed}
 
     context = {
+        'lessons': lessons,
+        'completed_ids': completed_ids,
+        'user_pod': pod,
+        'user_xp': profile.xp,
+        'user_level': profile.level,
         'title': 'Lessons | Future of Work',
     }
     return render(request, 'pages/lessons.html', context)
 
+@login_required
+def lesson_detail(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
 
-# Create your views here.
+    pod = request.user.profile.pod
+    all_lessons = Lesson.objects.filter(pod=pod).order_by('order')
+
+    # Check progress
+    progress = LessonProgress.objects.filter(user=request.user)
+    completed_ids = [p.lesson_id for p in progress if p.completed]
+
+    # Lock if prerequisites not completed
+    locked = False
+    for prereq in lesson.prerequisites.all():
+        if prereq.id not in completed_ids:
+            locked = True
+            break
+
+    # Calculate progress percentage
+    total = all_lessons.count()
+    completed = len(completed_ids)
+    progress_percent = int((completed / total) * 100) if total > 0 else 0
+
+    context = {
+        "lesson": lesson,
+        "lessons": all_lessons,
+        "locked": locked,
+        "completed_ids": completed_ids,
+        "progress_percent": progress_percent,
+        "title": f"{lesson.title} | Lessons",
+    }
+
+    return render(request, "pages/lesson_detail.html", context)
+
+@login_required
+def complete_lesson(request, lesson_id):
+    if request.method != "POST":
+        return redirect('lessons')
+    
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    profile = request.user.profile
+    XP_PER_LESSON = 5
+    progress, created = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+    
+    if not progress.completed:
+        progress.completed = True
+        progress.completed_at = timezone.now()
+        progress.save()
+        
+        # Award XP
+        profile.xp += XP_PER_LESSON
+
+        # Update daily streak
+        profile.update_streak()
+
+        # Update Level
+        profile.level = max(1, profile.xp // 100 + 1) # Every 100 XP = 1 Level
+        
+        # Award Badge if applicable
+        eligible_badge = Badge.objects.filter(
+            min_level__lte=profile.level,
+            max_level__gte=profile.level
+        ).order_by('rank').first()
+        
+        if eligible_badge:
+            current_badges = profile.badges.all()
+            current_rank = current_badges.order_by('-rank').first().rank if current_badges else 0
+
+            # Allow only +1 rank upgrade
+            if eligible_badge.rank == current_rank + 1:
+                profile.badges.add(eligible_badge)
+
+        profile.save()
+
+    # Redirect to next unlocked lesson
+    next_lesson = Lesson.objects.filter(
+        pod=lesson.pod,
+        order__gt=lesson.order,
+        locked=False
+    ).order_by("order").first()
+
+    if next_lesson:
+        return redirect("lesson_detail", lesson_id=next_lesson.id)
+
+    return redirect('lesson')
+
+
+
+def waitlist(request):
+    context = {
+        'title': 'Waitlist | Future of Work by OwlphaDAO'
+    }
+    return render(request, 'pages/waitlist.html', context)
+
+def waitlistform(request):
+    if request.method == 'POST':
+        form = WaitlistForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Thank you for registering! We’ll reach out soon.")
+            return redirect('future_of_work_user_success')
+        else:
+            messages.error(request, "Please fix the errors below.")
+
+    else:
+        form = WaitlistForm()
+
+    context = {
+        'form': form,
+        'title': 'Subscription Form | Future of Work',
+    }
+
+    return render(request, 'pages/future_subscription.html', context)
+
+def waitlist_success(request):
+    context = {
+        'title': 'Registration Successful | Future of Work'
+    }
+    return render(request, 'pages/waitlist_success.html', context)
+
+
+
 def future_of_work(request):
     if request.method == 'POST':
         form = FutureOfWorkForm(request.POST)

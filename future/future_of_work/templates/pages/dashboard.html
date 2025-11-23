@@ -57,7 +57,7 @@
     </div>
       <div class="flex items-center gap-3">
         <img id="topbar-avatar" src="" class="w-10 h-10 rounded-full border-2 border-gold object-cover mr-2 cursor-pointer" alt="avatar" />
-      <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">Pod</span>
+      <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">{{ request.user.profile.get_pod_display }}</span>
       <a href="{% url 'profile' %}" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">Profile</a>
       <div class="relative ml-3">
         <button id="notification-bell" class="text-gold text-2xl focus:outline-none relative">
@@ -283,7 +283,7 @@
 
   <div id="confetti" class="fixed inset-0 pointer-events-none z-50 hidden"></div>
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
-  <!--<script src="{% static 'js/dashboard.js' %}"></script> -->
+  <script src="{% static 'js/dashboard.js' %}"></script>
   <script>
     // Show admin link only if user is authenticated as admin
     const isAdmin = sessionStorage.getItem('adminAuth') === 'true';

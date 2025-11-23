@@ -3,15 +3,23 @@ from . import views
 
 urlpatterns = [
     path('', views.landing_page, name='home'),
+    
     path('onboarding/user/authentication/', views.auth_page, name='auth'),
     path('logout/', views.logout, name='logout'),
     path('onboarding/user/', views.onboarding_page, name='onboarding'),
     path('onboarding/user/complete/', views.onboarding_complete, name='onboarding_complete'),
+
     path('user/dashboard/', views.dashboard_page, name='dashboard'),
     path('user/profile/', views.profile_page, name='profile'), 
-    path('user/lesson/', views.lesson_page, name='lesson'), 
+
+    path('user/lesson/', views.lesson_page, name='lesson'),
+    path("lessons/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
+    path('lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
        
 
+    path('future-of-work/waitlist/', views.waitlist, name='future_of_work_waitlist'),
+    path('future-of-work/user/subscribe/', views.waitlistform, name='future_of_work_user_subscribe'),
+    path('future-of-work/user/registration/', views.waitlist_success, name='future_of_work_user_success'),
 
     path('future-of-work/subscribe/', views.future_of_work, name='future_of_work_subscribe'),
     path('registration/success/<int:pk>/', views.future_of_work_subscription_success, name='subscription_success'),

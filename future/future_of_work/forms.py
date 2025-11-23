@@ -2,10 +2,9 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
-from .models import Future_Of_Work
+from .models import UserProfile, Waitlist, Future_Of_Work
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
-from .models import UserProfile
 
 User = get_user_model()
 
@@ -70,6 +69,12 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['profile_image', 'pod', 'goal']
+
+
+class  WaitlistForm(forms.ModelForm):
+    class Meta:
+        model = Waitlist
+        fields = '__all__'
 
 class FutureOfWorkForm(forms.ModelForm):
     class Meta:

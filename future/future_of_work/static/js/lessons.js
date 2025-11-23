@@ -1,12 +1,4 @@
-// lessons.js
 
-// Validation: redirect if no onboarding data
-if(!localStorage.getItem("userName") || !localStorage.getItem("userPod")) {
-  window.location.href = "onboarding.html";
-}
-
-const userPod = localStorage.getItem('userPod') || 'Creator';
-document.getElementById('userPodBadge').textContent = userPod;
 
 // Lesson data structure
 const lessonData = {

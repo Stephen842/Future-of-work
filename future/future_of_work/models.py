@@ -3,22 +3,21 @@ from phonenumber_field.modelfields import PhoneNumberField
 from decimal import Decimal
 from django_countries.fields import CountryField
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
+from embed_video.fields import EmbedVideoField
 
 
 # Create your models here.
 User = get_user_model()
 
 class Badge(models.Model):
-    BADGE_TIER_CHOICES = [
-        ("Diamond", "Diamond"),
-        ("Platinum", "Platinum"),
-        ("Gold", "Gold"),
-        ("Silver", "Silver"),
-        ("Bronze", "Bronze"),
-        ("Iron", "Iron"),
-    ]
-       
-    name = models.CharField(max_length=50, choices=BADGE_TIER_CHOICES, unique=True)
+    name = models.CharField(max_length=50, unique=True)
+    tier = models.CharField(max_length=50)
+    icon = models.ImageField(upload_to="badges/icons/", null=True, blank=True)
+    rank = models.PositiveIntegerField(unique=True, default=1)
+    min_level = models.PositiveIntegerField(default=1)  # Lowest level of range
+    max_level = models.PositiveIntegerField(default=6)  # Highest level of range
 
     def __str__(self):
         return self.name
@@ -80,17 +79,84 @@ class UserProfile(models.Model):
         self.level = (self.xp // 100) + 1
     
     def save(self, *args, **kwargs):
+        new = self.pk is None
         super().save(*args, **kwargs)
         # Automatically add default badge if user has no badges yet
-        if not self.badges.exists():
-            default_badge = Badge.objects.get(name="Iron")
-            self.badges.add(default_badge)
+        if new and not self.badges.exists():
+            try:
+                default_badge = Badge.objects.get(rank=1)
+                self.badges.add(default_badge)
+            except Badge.DoesNotExist:
+                pass
+
+    def update_streak(self):
+        today = timezone.now().date()
+        if self.last_active_day == today - timedelta(days=1):
+            self.streak_current += 1
+        elif self.last_active_day < today - timedelta(days=1):
+            self.streak_current = 1
+        self.streak_best = max(self.streak_best, self.streak_current)
+        self.last_active_day = today
+        self.save()
     
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class Lesson(models.Model):
+    POD_CHOICES = UserProfile.POD_CHOICES
+    pod = models.CharField(max_length=64, choices=POD_CHOICES)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    video_url = EmbedVideoField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=1)
+    locked = models.BooleanField(default=False)
+    do_type = models.CharField(max_length=50, blank=True)  # quiz, upload, instruction
+    earn_type = models.CharField(max_length=50, blank=True)  # xp, badge, contact
+    xp_amount = models.PositiveIntegerField(default=0)
+    badge = models.ForeignKey(Badge, on_delete=models.SET_NULL, null=True, blank=True)
+    certificate_enabled = models.BooleanField(default=False)
+    prerequisites = models.ManyToManyField("self", blank=True, symmetrical=False)
+
+    def __str__(self):
+        return f"{self.pod} - {self.title}"
+
+
+class LessonProgress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    quiz_score = models.PositiveIntegerField(null=True, blank=True)
+    file_submission = models.FileField(upload_to='lesson_uploads/', null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson')
+
+
+class Waitlist(models.Model):
+    USER_STATUS = [
+        ('', 'Select your status...'),
+        ('tutee', 'Student'),
+        ('tutor', 'Educator'),
+    ]
+    name = models.CharField(max_length=100)
+    email = models.EmailField( blank=False, unique=True, 
+        error_messages={
+            'unique': "Email Address already exists."
+        }
+    )
+    phone = PhoneNumberField(unique=True, 
+        error_messages={
+            'unique': "Phone number already exists."
+        }
+    )
+    country = CountryField(blank_label='Select your country')
+    user_type = models.CharField(max_length=20, choices=USER_STATUS, default="")
+
+
 
 class Future_Of_Work(models.Model):
     COURSE_CHOICES = [

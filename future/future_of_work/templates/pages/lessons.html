@@ -1,74 +1,194 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ title }}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            gold: '#f6c960',
-            offwhite: '#f8f8f8',
-            charcoal: '#1a1a1a',
-            accentgray: '#2d2d2d',
-          },
-          fontFamily: {
-            inter: ["Inter", "sans-serif"],
-            poppins: ["Poppins", "sans-serif"],
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="content-type" content="text/html; charset = utf-8"/>
+    <meta name = "robots" content = "index, follow">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+    <link rel="icon" sizes="192x192" href="{% static 'favicon_io/android-chrome-192x192.png' %}">
+    <link rel="icon" sizes="256x256" href="{% static 'favicon_io/android-chrome-512x512.png' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'favicon_io/site.webmanifest' %}">
+    <link rel = 'stylesheet' href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'>
+    <link rel = 'stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css'>
+      
+    <title>{{ title }}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              gold: '#f6c960',
+              offwhite: '#f8f8f8',
+              charcoal: '#1a1a1a',
+              accentgray: '#2d2d2d',
+            },
+            fontFamily: {
+              inter: ["Inter", "sans-serif"],
+              poppins: ["Poppins", "sans-serif"],
+            }
           }
         }
-      }
-    };
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body { font-family: 'Inter', 'Poppins', sans-serif; }
-    html { scroll-behavior: smooth; }
-  </style>
-</head>
-<body class="bg-charcoal min-h-screen text-offwhite">
-  <a href="dashboard.html" class="fixed top-4 left-4 z-50 text-gold underline font-bold hover:opacity-75 transition">← Back to Dashboard</a>
-  <header class="bg-gradient-to-b from-charcoal to-accentgray/40 px-4 pt-7 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div>
-      <h1 class="text-2xl md:text-3xl font-poppins font-bold text-gold">🧠 Learn</h1>
-      <p class="text-sm text-accentgray font-inter">Master digital skills, one lesson at a time.</p>
-    </div>
-    <div class="flex items-center gap-3">
-      <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">Pod</span>
-      <a href="profile.html" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">
-        Profile →
-      </a>
-    </div>
-  </header>
+      };
+    </script>
 
-  <main class="max-w-6xl mx-auto pt-7 pb-16 px-2 md:px-4">
-    <div id="lessons-grid" class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </main>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
 
-  <!-- Lesson Modal -->
-  <div id="lesson-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/95 backdrop-blur-sm">
-    <div class="bg-accentgray rounded-2xl max-w-full w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gold/20 px-2 sm:max-w-2xl">
-      <div class="relative p-6">
-        <button id="close-modal" class="absolute top-6 right-6 text-gold hover:text-offwhite transition">✕</button>
-        <div id="modal-content">
-          <!-- Dynamic content from JS -->
+    <style>
+      body { font-family: 'Inter', 'Poppins', sans-serif; }
+      html { scroll-behavior: smooth; }
+    </style>
+  </head>
+
+  <body class="bg-charcoal min-h-screen text-offwhite">
+    <a href="{% url 'dashboard' %}" class="fixed top-4 left-4 z-50 text-gold underline font-bold hover:opacity-75 transition">Dashboard</a>
+    
+    <header class="bg-gradient-to-b from-charcoal to-accentgray/40 px-4 pt-7 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl mt-10 font-poppins font-bold text-gold">🧠 Learn</h1>
+        <p class="text-sm text-gray-50 font-inter">Master digital skills, one lesson at a time.</p>
+      </div>
+      <div class="flex items-center gap-3">
+
+        <!-- XP / Level Block -->
+        <div class="flex items-center gap-4 bg-accentgray/40 px-4 py-2 rounded-xl border border-gold/30 shadow-lg backdrop-blur-sm">
+
+            <div class="flex flex-col items-center">
+                <span class="text-gold font-bold text-lg leading-none">{{ user_level }}</span>
+                <span class="text-[9px] uppercase tracking-wide text-gray-400">Level</span>
+            </div>
+
+            <div class="h-6 w-px bg-gold/30"></div> <!-- Divider -->
+
+            <div class="flex flex-col items-center">
+                <span class="text-gold font-bold text-lg leading-none">{{ user_xp }}</span>
+                <span class="text-[9px] uppercase tracking-wide text-gray-400">XP</span>
+            </div>
+        </div>
+
+        <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">{{ request.user.profile.get_pod_display }}</span>
+        <a href="{% url 'profile' %}" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">
+          Profile →
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-12 pt-8 pb-20 px-3 md:px-6">
+      {% if lessons %}
+        <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {% for lesson in lessons %}
+            {% comment %} Determine locked status {% endcomment %}
+            {% with locked=False %}
+              {% if lesson.prerequisites.exists %}
+                {% for prereq in lesson.prerequisites.all %}
+                  {% if prereq.id not in completed_ids %}
+                    {% with locked=True %}{% endwith %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="relative group p-7 rounded-3xl shadow-xl border overflow-hidden transition-all duration-500 ease-in-out
+              {% if lesson.id in completed_ids %}
+                border-gold bg-gold/10 hover:shadow-[0_0_25px_rgba(255,215,0,0.35)]
+                cursor-pointer scale-100 hover:scale-[1.04]
+              {% elif lesson.locked %}
+                border-red-500 bg-accentgray/40 opacity-50 cursor-not-allowed
+              {% else %}
+                border-gold/20 bg-accentgray/50 hover:scale-[1.04]
+                hover:border-gold/40 hover:shadow-[0_0_35px_rgba(255,215,0,0.25)]
+                cursor-pointer
+              {% endif %}">
+
+
+              {% comment %} ✨ GLOW HALO ON HOVER (UNLOCKED) {% endcomment %}
+              {% if not lesson.locked and lesson.id not in completed_ids %}
+                <div class="absolute inset-0 rounded-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition duration-500 ease-out bg-gradient-radial from-gold/25 via-transparent to-transparent blur-2xl scale-75 group-hover:scale-100"></div>
+              {% endif %}
+
+              {% if not lesson.locked %}
+                <a href="{% url 'lesson_detail' lesson.id %}" class="relative z-10 font-poppins text-2xl font-bold text-gold mb-3 block">
+                  {{ lesson.title }}
+                </a>
+              {% else %}
+                <span class="relative z-10 font-poppins text-2xl font-bold text-gray-400 mb-3 block cursor-not-allowed">
+                  {{ lesson.title }}
+                </span>
+              {% endif %}
+
+              <p class="relative z-10 text-gray-200 text-sm mb-5 leading-relaxed">
+                {{ lesson.description|truncatewords:20 }}
+              </p>
+
+              {% comment %} Prerequisites list {% endcomment %}
+              {% if lesson.prerequisites.exists %}
+                <div class="relative z-10 mb-4">
+                  <h4 class="text-sm text-gray-300 font-semibold mb-1">Prerequisites:</h4>
+                  <ul class="space-y-1">
+                    {% for prereq in lesson.prerequisites.all %}
+                      <li class="flex items-center text-xs">
+                        {% if prereq.id in completed_ids %}
+                          <span class="text-green-400 font-bold mr-2">✅</span> {{ prereq.title }}
+                        {% else %}
+                          <span class="text-red-400 font-bold mr-2">🔒</span> {{ prereq.title }}
+                        {% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              <div class="relative z-10">
+                {% if lesson.locked %}
+                  <div class="flex flex-col items-center justify-center text-red-400 font-semibold">
+                    <span class="animate-pulse text-xl">🔒</span>
+                    <span class="text-xs mt-1">Complete previous lessons</span>
+                  </div>
+
+                {% elif lesson.id in completed_ids %}
+                  <span class="inline-block mt-4 px-4 py-1 rounded-lg bg-gold/70 text-charcoal text-xs font-boldanimate-pulse shadow-md"> ✅ Completed </span>
+
+                {% else %}
+                  <a href="{% url 'lesson_detail' lesson.id %}" class="w-full bg-gold text-charcoal font-bold rounded-lg px-4 py-2 hover:bg-gold/90 hover:shadow-lg hover:tracking-wide transition-all duration-300 ease-in-out">
+                    View Lesson →
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <p class="text-center text-gray-400 py-10 text-sm">
+          No lessons available yet.
+        </p>
+      {% endif %}
+    </main>
+
+    <!-- Modal & Toast untouched -->
+    <div id="lesson-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/95 backdrop-blur-sm">
+      <div class="bg-accentgray rounded-2xl max-w-full w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gold/20 px-2 sm:max-w-2xl">
+        <div class="relative p-6">
+          <button id="close-modal" class="absolute top-6 right-6 text-gold hover:text-offwhite transition">✕</button>
+          <div id="modal-content"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Toast Container -->
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
-  <script src="{% static 'js/lessons.js'%}"></script>
-</body>
+    <script src="{% static 'js/lessons.js'%}"></script>
+  </body>
 </html>
 
