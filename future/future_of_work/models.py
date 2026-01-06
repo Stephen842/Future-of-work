@@ -51,7 +51,7 @@ class UserProfile(models.Model):
     completed_lessons = models.PositiveIntegerField(default=0)
     streak_current = models.PositiveIntegerField(default=0)
     streak_best = models.PositiveIntegerField(default=0)
-    last_active_day = models.DateField(auto_now_add=True)
+    last_active_day = models.DateField(default=timezone.now)
 
     # Breakdown experience
     xp_learn = models.PositiveIntegerField(default=0)
@@ -62,8 +62,8 @@ class UserProfile(models.Model):
     badges = models.ManyToManyField(Badge, blank=True, related_name="users")
 
     # Referrals
-    referral_code = models.CharField(max_length=32, blank=True, null=True)
-    referred_by = models.CharField(max_length=32, blank=True, null=True)
+    referral_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    referred_by = models.CharField(max_length=10, blank=True, null=True, db_index=True)
 
 
     # Web3
@@ -77,17 +77,7 @@ class UserProfile(models.Model):
     
     def update_level(self):
         self.level = (self.xp // 100) + 1
-    
-    def save(self, *args, **kwargs):
-        new = self.pk is None
-        super().save(*args, **kwargs)
-        # Automatically add default badge if user has no badges yet
-        if new and not self.badges.exists():
-            try:
-                default_badge = Badge.objects.get(rank=1)
-                self.badges.add(default_badge)
-            except Badge.DoesNotExist:
-                pass
+        self.save(update_fields=["level"])
 
     def update_streak(self):
         today = timezone.now().date()
@@ -98,6 +88,9 @@ class UserProfile(models.Model):
         self.streak_best = max(self.streak_best, self.streak_current)
         self.last_active_day = today
         self.save()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
     
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
@@ -122,6 +115,21 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.pod} - {self.title}"
+    
+    def is_unlocked_for_user(self, user):
+        '''
+        Returns True if the user has completed all prerequisite lessons.
+        If `locked=True` on the lesson, this will always return False.
+        '''
+        if self.locked:
+            return False
+
+        completed_ids = LessonProgress.objects.filter(
+            user=user,
+            completed=True
+        ).values_list("lesson_id", flat=True)
+
+        return all(prereq.id in completed_ids for prereq in self.prerequisites.all())
 
 
 class LessonProgress(models.Model):
@@ -134,6 +142,9 @@ class LessonProgress(models.Model):
 
     class Meta:
         unique_together = ('user', 'lesson')
+        indexes = [
+            models.Index(fields=['user', 'lesson']),
+        ]
 
 
 class Waitlist(models.Model):

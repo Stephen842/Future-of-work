@@ -79,7 +79,7 @@
 
                 <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">{{ request.user.profile.get_pod_display }}</span>
                 <a href="{% url 'profile' %}" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">
-                Profile →
+                Profile
                 </a>
             </div>
         </header>
@@ -90,7 +90,7 @@
             <aside class="bg-accentgray/40 rounded-2xl p-5 border border-gold/20">
                 <h3 class="font-bold text-gold mb-4">Progress: {{ progress_percent }}%</h3>
                 <div class="w-full bg-darkgray h-2 rounded-full mb-4">
-                    <div class="bg-gold h-2 rounded-full" style="width:{{ progress_percent }}%;"></div>
+                    <div class="bg-gold h-2 rounded-full" style="width:{{ progress_percent|default:0 }}%;"></div>
                 </div>
 
                 <ul class="space-y-3">

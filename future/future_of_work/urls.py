@@ -12,9 +12,9 @@ urlpatterns = [
     path('user/dashboard/', views.dashboard_page, name='dashboard'),
     path('user/profile/', views.profile_page, name='profile'), 
 
-    path('user/lesson/', views.lesson_page, name='lesson'),
-    path("lessons/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
-    path('lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
+    path('user/lessons/', views.lessons_page, name='lessons'),
+    path("user/lessons/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
+    path('user/lessons/<int:lesson_id>/complete/', views.complete_lesson, name='complete_lesson'),
        
 
     path('future-of-work/waitlist/', views.waitlist, name='future_of_work_waitlist'),

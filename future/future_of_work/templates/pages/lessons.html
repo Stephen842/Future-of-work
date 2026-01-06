@@ -79,7 +79,7 @@
 
         <span id="userPodBadge" class="inline-block px-4 py-2 rounded-md bg-gold/90 text-charcoal font-bold font-inter uppercase tracking-wide shadow border border-gold/60">{{ request.user.profile.get_pod_display }}</span>
         <a href="{% url 'profile' %}" class="text-gold hover:text-offwhite transition font-bold text-sm font-poppins">
-          Profile →
+          Profile
         </a>
       </div>
     </header>
@@ -87,23 +87,12 @@
     <main class="max-w-6xl mx-auto mt-12 pt-8 pb-20 px-3 md:px-6">
       {% if lessons %}
         <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {% for lesson in lessons %}
-            {% comment %} Determine locked status {% endcomment %}
-            {% with locked=False %}
-              {% if lesson.prerequisites.exists %}
-                {% for prereq in lesson.prerequisites.all %}
-                  {% if prereq.id not in completed_ids %}
-                    {% with locked=True %}{% endwith %}
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
-
+          {% for item in lessons %}
             <div class="relative group p-7 rounded-3xl shadow-xl border overflow-hidden transition-all duration-500 ease-in-out
-              {% if lesson.id in completed_ids %}
+              {% if item.completed %}
                 border-gold bg-gold/10 hover:shadow-[0_0_25px_rgba(255,215,0,0.35)]
                 cursor-pointer scale-100 hover:scale-[1.04]
-              {% elif lesson.locked %}
+              {% elif item.locked %}
                 border-red-500 bg-accentgray/40 opacity-50 cursor-not-allowed
               {% else %}
                 border-gold/20 bg-accentgray/50 hover:scale-[1.04]
@@ -111,32 +100,33 @@
                 cursor-pointer
               {% endif %}">
 
-
-              {% comment %} ✨ GLOW HALO ON HOVER (UNLOCKED) {% endcomment %}
-              {% if not lesson.locked and lesson.id not in completed_ids %}
+              {% comment %} ✨ Glow halo for unlocked lessons {% endcomment %}
+              {% if not item.locked and not item.completed %}
                 <div class="absolute inset-0 rounded-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition duration-500 ease-out bg-gradient-radial from-gold/25 via-transparent to-transparent blur-2xl scale-75 group-hover:scale-100"></div>
               {% endif %}
 
-              {% if not lesson.locked %}
-                <a href="{% url 'lesson_detail' lesson.id %}" class="relative z-10 font-poppins text-2xl font-bold text-gold mb-3 block">
-                  {{ lesson.title }}
+              {% comment %} Lesson title {% endcomment %}
+              {% if not item.locked %}
+                <a href="{% url 'lesson_detail' item.lesson.id %}" class="relative z-10 font-poppins text-2xl font-bold text-gold mb-3 block">
+                  {{ item.lesson.title }}
                 </a>
               {% else %}
                 <span class="relative z-10 font-poppins text-2xl font-bold text-gray-400 mb-3 block cursor-not-allowed">
-                  {{ lesson.title }}
+                  {{ item.lesson.title }}
                 </span>
               {% endif %}
 
+              {% comment %} Lesson description {% endcomment %}
               <p class="relative z-10 text-gray-200 text-sm mb-5 leading-relaxed">
-                {{ lesson.description|truncatewords:20 }}
+                {{ item.lesson.description|truncatewords:20 }}
               </p>
 
-              {% comment %} Prerequisites list {% endcomment %}
-              {% if lesson.prerequisites.exists %}
+              {% comment %} Prerequisites {% endcomment %}
+              {% if item.lesson.prerequisites.exists %}
                 <div class="relative z-10 mb-4">
                   <h4 class="text-sm text-gray-300 font-semibold mb-1">Prerequisites:</h4>
                   <ul class="space-y-1">
-                    {% for prereq in lesson.prerequisites.all %}
+                    {% for prereq in item.lesson.prerequisites.all %}
                       <li class="flex items-center text-xs">
                         {% if prereq.id in completed_ids %}
                           <span class="text-green-400 font-bold mr-2">✅</span> {{ prereq.title }}
@@ -149,32 +139,34 @@
                 </div>
               {% endif %}
 
+              {% comment %} Lesson action button/status {% endcomment %}
               <div class="relative z-10">
-                {% if lesson.locked %}
+                {% if item.locked %}
                   <div class="flex flex-col items-center justify-center text-red-400 font-semibold">
                     <span class="animate-pulse text-xl">🔒</span>
                     <span class="text-xs mt-1">Complete previous lessons</span>
                   </div>
-
-                {% elif lesson.id in completed_ids %}
-                  <span class="inline-block mt-4 px-4 py-1 rounded-lg bg-gold/70 text-charcoal text-xs font-boldanimate-pulse shadow-md"> ✅ Completed </span>
-
+                {% elif item.completed %}
+                  <span class="inline-block mt-4 px-4 py-1 rounded-lg bg-gold/70 text-charcoal text-xs font-bold animate-pulse shadow-md">
+                    ✅ Completed
+                  </span>
                 {% else %}
-                  <a href="{% url 'lesson_detail' lesson.id %}" class="w-full bg-gold text-charcoal font-bold rounded-lg px-4 py-2 hover:bg-gold/90 hover:shadow-lg hover:tracking-wide transition-all duration-300 ease-in-out">
+                  <a href="{% url 'lesson_detail' item.lesson.id %}" class="w-full bg-gold text-charcoal font-bold rounded-lg px-4 py-2 hover:bg-gold/90 hover:shadow-lg hover:tracking-wide transition-all duration-300 ease-in-out">
                     View Lesson →
                   </a>
                 {% endif %}
               </div>
+
             </div>
           {% endfor %}
         </div>
-
       {% else %}
         <p class="text-center text-gray-400 py-10 text-sm">
           No lessons available yet.
         </p>
       {% endif %}
     </main>
+
 
     <!-- Modal & Toast untouched -->
     <div id="lesson-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/95 backdrop-blur-sm">

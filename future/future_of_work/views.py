@@ -13,24 +13,26 @@ from django.contrib import messages
 from django.db.models import Count, Sum, Q
 from django.core.paginator import Paginator
 
-from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 import json
-from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout, update_session_auth_hash
+from django.contrib.auth import get_user_model, login as auth_login, authenticate, logout as auth_logout, update_session_auth_hash
 from django.utils import timezone
 
 from .models import Badge, UserProfile, Lesson, LessonProgress, Waitlist, Future_Of_Work
 from .forms import OnboardingForm, SigninForm, UserForm, UserProfileForm, WaitlistForm, FutureOfWorkForm
+from .lessons import complete_lesson_for_user
 
 
 User = get_user_model()
+
 
 def landing_page(request):
     context = {
         'title': 'Future of Work by OwlphaDAO',
     }
     return render(request, 'pages/Future_landing.html', context)
+
 
 def auth_page(request):
     ''''
@@ -60,7 +62,7 @@ def auth_page(request):
                     return redirect(next_url)
                 return redirect('dashboard')
             else:
-                messages.error(request, "Invalid credentials. Please check and try again.")
+                messages.error(request, 'Invalid credentials. Please check and try again.')
 
     else:
         form = SigninForm()
@@ -71,6 +73,7 @@ def auth_page(request):
     }
     return render(request, 'pages/auth.html', context)
 
+
 def logout(request):
     '''
     Logs out the current user while preserving session data (if any non-auth-related data exists).
@@ -78,6 +81,7 @@ def logout(request):
     '''
     auth_logout(request)
     return redirect('home')
+
 
 def onboarding_page(request):
     if request.user.is_authenticated:
@@ -92,8 +96,9 @@ def onboarding_page(request):
     }
     return render(request, 'pages/onboarding.html', context)
 
+
 def onboarding_complete(request):
-    if request.method != "POST":
+    if request.method != 'POST':
         return redirect('onboarding')
     form = OnboardingForm(request.POST)
 
@@ -129,10 +134,11 @@ def onboarding_complete(request):
     )
 
     # log user in
-    login(request, user, backend='account.BackendAuth.CustomAuthBackend')
+    auth_login(request, user, backend='account.BackendAuth.CustomAuthBackend')
 
-    messages.success(request, "Welcome! Your account has been created successfully.")
+    messages.success(request, 'Welcome! Your account has been created successfully.')
     return redirect(reverse('dashboard'))
+
 
 @login_required
 def dashboard_page(request):
@@ -156,6 +162,7 @@ def dashboard_page(request):
         'title': 'Dashboard | Future of Work',
     }
     return render(request, 'pages/dashboard.html', context)
+
 
 @login_required
 def profile_page(request):
@@ -184,17 +191,28 @@ def profile_page(request):
     }
     return render(request, 'pages/profile.html', context)
 
-@login_required
-def lesson_page(request):
-    profile = request.user.profile
 
+@login_required
+def lessons_page(request):
+    profile = request.user.profile
     pod = profile.pod
     lessons = Lesson.objects.filter(pod=pod).order_by('order')
+
     progress = LessonProgress.objects.filter(user=request.user)
     completed_ids = {p.lesson_id for p in progress if p.completed}
 
+    # Include dynamic locked status using the model method
+    lesson_status = [
+        {
+            'lesson': lesson,
+            'locked': not lesson.is_unlocked_for_user(request.user),
+            'completed': lesson.id in completed_ids,
+        }
+        for lesson in lessons
+    ]
+
     context = {
-        'lessons': lessons,
+        'lessons': lesson_status,
         'completed_ids': completed_ids,
         'user_pod': pod,
         'user_xp': profile.xp,
@@ -202,6 +220,7 @@ def lesson_page(request):
         'title': 'Lessons | Future of Work',
     }
     return render(request, 'pages/lessons.html', context)
+
 
 @login_required
 def lesson_detail(request, lesson_id):
@@ -215,11 +234,7 @@ def lesson_detail(request, lesson_id):
     completed_ids = [p.lesson_id for p in progress if p.completed]
 
     # Lock if prerequisites not completed
-    locked = False
-    for prereq in lesson.prerequisites.all():
-        if prereq.id not in completed_ids:
-            locked = True
-            break
+    locked = not lesson.is_unlocked_for_user(request.user)
 
     # Calculate progress percentage
     total = all_lessons.count()
@@ -227,68 +242,41 @@ def lesson_detail(request, lesson_id):
     progress_percent = int((completed / total) * 100) if total > 0 else 0
 
     context = {
-        "lesson": lesson,
-        "lessons": all_lessons,
-        "locked": locked,
-        "completed_ids": completed_ids,
-        "progress_percent": progress_percent,
-        "title": f"{lesson.title} | Lessons",
+        'lesson': lesson,
+        'lessons': all_lessons,
+        'locked': locked,
+        'completed_ids': completed_ids,
+        'progress_percent': progress_percent,
+        'title': f'{lesson.title} | Lessons',
     }
 
-    return render(request, "pages/lesson_detail.html", context)
+    return render(request, 'pages/lesson_detail.html', context)
+
 
 @login_required
 def complete_lesson(request, lesson_id):
-    if request.method != "POST":
+    if request.method != 'POST':
         return redirect('lessons')
     
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    profile = request.user.profile
-    XP_PER_LESSON = 5
-    progress, created = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
-    
-    if not progress.completed:
-        progress.completed = True
-        progress.completed_at = timezone.now()
-        progress.save()
-        
-        # Award XP
-        profile.xp += XP_PER_LESSON
 
-        # Update daily streak
-        profile.update_streak()
-
-        # Update Level
-        profile.level = max(1, profile.xp // 100 + 1) # Every 100 XP = 1 Level
-        
-        # Award Badge if applicable
-        eligible_badge = Badge.objects.filter(
-            min_level__lte=profile.level,
-            max_level__gte=profile.level
-        ).order_by('rank').first()
-        
-        if eligible_badge:
-            current_badges = profile.badges.all()
-            current_rank = current_badges.order_by('-rank').first().rank if current_badges else 0
-
-            # Allow only +1 rank upgrade
-            if eligible_badge.rank == current_rank + 1:
-                profile.badges.add(eligible_badge)
-
-        profile.save()
+    complete_lesson_for_user(request.user, lesson)       
 
     # Redirect to next unlocked lesson
-    next_lesson = Lesson.objects.filter(
-        pod=lesson.pod,
-        order__gt=lesson.order,
-        locked=False
-    ).order_by("order").first()
+    next_lesson = (
+        Lesson.objects.filter(pod=lesson.pod, order__gt=lesson.order).order_by("order").first()
+    )
+
+    # Ensure the next lesson is unlocked
+    while next_lesson and not next_lesson.is_unlocked_for_user(request.user):
+        next_lesson = (
+            Lesson.objects.filter(pod=lesson.pod, order__gt=next_lesson.order).order_by("order").first()
+        )
 
     if next_lesson:
-        return redirect("lesson_detail", lesson_id=next_lesson.id)
+        return redirect('lesson_detail', lesson_id=next_lesson.id)
 
-    return redirect('lesson')
-
+    return redirect('lessons')
 
 
 def waitlist(request):
@@ -302,10 +290,10 @@ def waitlistform(request):
         form = WaitlistForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Thank you for registering! We’ll reach out soon.")
+            messages.success(request, 'Thank you for registering! We’ll reach out soon.')
             return redirect('future_of_work_user_success')
         else:
-            messages.error(request, "Please fix the errors below.")
+            messages.error(request, 'Please fix the errors below.')
 
     else:
         form = WaitlistForm()
@@ -336,7 +324,7 @@ def future_of_work(request):
             subscription.save()
 
             # redirect depending on plan fee
-            if subscription.fee == Decimal("0.00"):
+            if subscription.fee == Decimal('0.00'):
                 subscription.status = 'active'
                 subscription.save()
                 return redirect('subscription_success', pk=subscription.id)  # free → success
@@ -397,20 +385,20 @@ def payment_selection(request, pk):
     context = {
         'subscription': subscription,
         'payment_methods': payment_methods,
-        'title': f"Payment Selection | {subscription.plan_preference.title()} Plan",
+        'title': f'Payment Selection | {subscription.plan_preference.title()} Plan',
     }
     return render(request, 'pages/payment_selection.html', context)
 
-def convert_usd_to_local(amount_usd, target_currency="NGN"):
-    """
+def convert_usd_to_local(amount_usd, target_currency='NGN'):
+    '''
     Convert USD to target currency using exchangerate.host API.
     Fallback to static rate if API fails.
-    """
+    '''
     try:
-        url = f"https://api.exchangerate.host/convert?from=USD&to={target_currency}&amount={amount_usd}"
+        url = f'https://api.exchangerate.host/convert?from=USD&to={target_currency}&amount={amount_usd}'
         response = requests.get(url, timeout=10)
         data = response.json()
-        return round(data["result"], 2)
+        return round(data['result'], 2)
     except Exception:
         # fallback if API fails (set your safe static rate here)
         static_rates = {'NGN': 1600, 'GHS': 16, 'ZAR': 18, 'XOF': 600, 'KES': 150, 'EGP': 50, 'USD': 1}
@@ -424,15 +412,15 @@ def start_payment(request, pk, gateway):
     if gateway == 'helio':
         # Show our custom Helio checkout page with the JS widget
         context = {
-           "subscription": subscription,
-            "title": "Pay with Helio | Future of Work",
-            "user_email": subscription.email,
-            "amount": subscription.fee,
-            "currency": "USDT",
+           'subscription': subscription,
+            'title': 'Pay with Helio | Future of Work',
+            'user_email': subscription.email,
+            'amount': subscription.fee,
+            'currency': 'USDT',
         }
         return render(request, 'pages/helio_checkout.html', context)     
     
-    elif gateway == "paystack":
+    elif gateway == 'paystack':
 
         # Generate and save your own merchant reference
         reference = f'FutureOfWork-{subscription.pk}-{int(time.time())}'
@@ -462,7 +450,7 @@ def start_payment(request, pk, gateway):
                 reverse('processing_payment', args=[subscription.pk])
             ),
             'cancelUrl': request.build_absolute_uri(
-                reverse("subscription_failed", args=[subscription.pk])
+                reverse('subscription_failed', args=[subscription.pk])
             ),
             'metadata': {
                 'subscription_id': subscription.pk,
@@ -492,17 +480,17 @@ def start_payment(request, pk, gateway):
             return redirect('subscription_failed', pk=subscription.pk)
 
 
-    elif gateway == "opay":
+    elif gateway == 'opay':
         # Generate and save your own merchant reference
         reference = f'FutureOfWork-{subscription.pk}-{int(time.time())}'
         subscription.transaction_id = reference
         subscription.save()
 
         # Convert USD → NGN (or other country’s currency)
-        target_currency = "EGP"   # you can later make this dynamic per user’s country
+        target_currency = 'EGP'   # you can later make this dynamic per user’s country
         local_amount = convert_usd_to_local(subscription.fee, target_currency)
 
-        NGROK_URL = "https://08fe5345015d.ngrok-free.app"
+        NGROK_URL = 'https://08fe5345015d.ngrok-free.app'
 
         payload = {
             'country': 'EG',
@@ -518,8 +506,8 @@ def start_payment(request, pk, gateway):
             'returnUrl': request.build_absolute_uri(
                 reverse('processing_payment', args=[subscription.pk])
             ),
-            'notifyUrl': f"{NGROK_URL}{reverse('opay_webhook')}",
-            'callbackUrl': f"{NGROK_URL}{reverse('opay_webhook')}",
+            'notifyUrl': f'{NGROK_URL}{reverse('opay_webhook')}',
+            'callbackUrl': f'{NGROK_URL}{reverse('opay_webhook')}',
             '''
             'notifyUrl': request.build_absolute_uri(
                 reverse('opay_webhook')
@@ -528,17 +516,17 @@ def start_payment(request, pk, gateway):
                 reverse('opay_webhook')
             ),
             '''
-            "cancelUrl": request.build_absolute_uri(
-                reverse("subscription_failed", args=[subscription.pk])
+            'cancelUrl': request.build_absolute_uri(
+                reverse('subscription_failed', args=[subscription.pk])
             ),
-            "evokeOpay": False,
-            "customerVisitSource": "BROWSER",
-            "expireAt": 30,
+            'evokeOpay': False,
+            'customerVisitSource': 'BROWSER',
+            'expireAt': 30,
             'userInfo': {
                 'userid': str(subscription.pk),
                 'userEmail': subscription.email,
-                "userName": subscription.name,
-                "userMobile": str(subscription.phone),
+                'userName': subscription.name,
+                'userMobile': str(subscription.phone),
             },
         }
 
@@ -561,7 +549,7 @@ def start_payment(request, pk, gateway):
 
         try:
             data = response.json()
-            print("🔍 OPay Response:", data)  # Debug
+            print('🔍 OPay Response:', data)  # Debug
         except ValueError:
             return render(request, 'pages/subscription_failed.html', {'error': f'Invalid JSON response from Opay', 'subscription': subscription})
         
@@ -576,7 +564,7 @@ def start_payment(request, pk, gateway):
                 'subscription': subscription,
             })
 
-    return render(request, "pages/subscription_failed.html", {"error": "Unsupported payment gateway."})
+    return render(request, 'pages/subscription_failed.html', {'error': 'Unsupported payment gateway.'})
 
 
 @csrf_exempt
@@ -597,12 +585,12 @@ def helio_webhook(request):
         customer_email = meta.get('customerDetails', {}).get('email')
         
         if not customer_email:
-            print("⚠️ No customer email found in webhook")
+            print('⚠️ No customer email found in webhook')
             return JsonResponse({'status': 'ignored'})
 
         subscription = Future_Of_Work.objects.filter(email=customer_email).first()
         if not subscription:
-            print(f"⚠️ Subscription with email {customer_email} not found")
+            print(f'⚠️ Subscription with email {customer_email} not found')
             return JsonResponse({'status': 'ignored'})
 
         # Update subscription based on transaction status
@@ -612,7 +600,7 @@ def helio_webhook(request):
             if subscription.transaction_id == tx_id:
                 return JsonResponse({'status': 'already processed'})
             
-            created_at_str = tx_obj.get("createdAt")
+            created_at_str = tx_obj.get('createdAt')
             subscription.created_at = (parse_datetime(created_at_str) if created_at_str else now()) # Use Helio timestamp if available   
             subscription.status = 'active'
             subscription.transaction_id = tx_id 
@@ -624,7 +612,7 @@ def helio_webhook(request):
             subscription.save()
 
         else:
-            print(f"⚠️ Unhandled tx_status: {tx_status}")
+            print(f'⚠️ Unhandled tx_status: {tx_status}')
             return JsonResponse({'status': 'unhandled'})
         
         return JsonResponse({'status': 'ok'})  
@@ -684,7 +672,7 @@ def paystack_webhook(request):
             subscription.status = 'pending'
 
         else:
-            print(f"Unhandled event: {event}")
+            print(f'Unhandled event: {event}')
             return JsonResponse({'status': 'unhandled'})
 
         # Update timestamp if available
@@ -705,15 +693,15 @@ def paystack_webhook(request):
 
 @csrf_exempt
 def opay_webhook(request):
-    """
+    '''
     OPay webhook handler for General Payment / Express (Cashier) flow.
     Validates payload and updates subscription status.
-    """
-    if request.method != "POST":
+    '''
+    if request.method != 'POST':
         return JsonResponse({'code': '40001', 'message': 'Invalid method'}, status=405)
     
     try:
-        body = json.loads(request.body.decode("utf-8"))
+        body = json.loads(request.body.decode('utf-8'))
         data = body.get('payload')
         if not data:
             return JsonResponse({'code': '40003', 'message': 'No data in payload'}, status=400)
@@ -727,13 +715,13 @@ def opay_webhook(request):
 
     subscription = Future_Of_Work.objects.filter(transaction_id=ref).first()
     if not subscription:
-            return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
+            return JsonResponse({'code': '00000', 'message': 'SUCCESSFUL'}, status=200)
         
     # Update status
     status = (data.get('status') or '').upper()
 
     # Idempotency check
-    if subscription.status == 'active' and status == "SUCCESS":
+    if subscription.status == 'active' and status == 'SUCCESS':
         return JsonResponse({'status': 'already processed'})
         
     if status == 'SUCCESS':
@@ -762,11 +750,11 @@ def opay_webhook(request):
                 return now()
         
     # Use OPay timestamp if available
-    tx_time = data.get("updateTime") or data.get("createdTime") or data.get("transactionTime") or data.get("completedTime")
+    tx_time = data.get('updateTime') or data.get('createdTime') or data.get('transactionTime') or data.get('completedTime')
     subscription.created_at = to_datetime(tx_time) if tx_time else now()
     subscription.save()
 
-    return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
+    return JsonResponse({'code': '00000', 'message': 'SUCCESSFUL'}, status=200)
 
 
 def processing_payment(request, pk):
@@ -774,9 +762,9 @@ def processing_payment(request, pk):
     checkout_url = subscription.checkout_url
 
     context = {
-        "subscription": subscription,
-        "checkout_url": checkout_url,
-        "title": "Processing Payment | Future of Work"
+        'subscription': subscription,
+        'checkout_url': checkout_url,
+        'title': 'Processing Payment | Future of Work'
     }
 
     return render(request, 'pages/processing_payment.html', context)
@@ -788,8 +776,8 @@ def check_subscription_status(request, pk):
 def currency_not_supported(request, pk):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
     context = {
-        "title": "Currency Not Supported",
-        "subscription": subscription,
+        'title': 'Currency Not Supported',
+        'subscription': subscription,
     }
     return render(request, 'pages/currency_not_supported.html', context)
 
@@ -902,7 +890,7 @@ def student_detail(request, pk, name, username):
     user = get_object_or_404(Future_Of_Work, id=pk, name=name)
 
     # fetch all records for a user through email
-    user_payments = Future_Of_Work.objects.filter(email=user.email).order_by("-created_at")
+    user_payments = Future_Of_Work.objects.filter(email=user.email).order_by('-created_at')
 
     context ={
         'user': user,
