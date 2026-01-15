@@ -78,7 +78,7 @@
     <section class="flex-1 flex flex-col gap-4 md:gap-8">
       <!-- Growth Loop Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-5 mb-5">
-        <a href="{% url 'lesson' %}" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
+        <a href="{% url 'lessons' %}" class="dashboard-card flex flex-col items-center gap-2 px-6 py-8 rounded-2xl backdrop-blur-xl bg-accentgray/40 border border-gold/15 shadow hover:shadow-gold/40 hover:-translate-y-2 transition duration-150">
           <span class="text-4xl mb-2">🧠</span>
           <span class="font-bold font-poppins text-gold mb-1">Learn</span>
           <span class="text-sm font-inter text-offwhite">Workshops & mentoring</span>
@@ -291,5 +291,10 @@
       document.getElementById('admin-link').classList.remove('hidden');
     }
   </script>
+
+  <!-- Footer -->
+  <footer class="relative z-10 mt-auto py-6 text-center text-gray-500 text-xs">
+    &copy; {% now 'Y' %} Future Of Work | Owlpha Digital Hub Limited
+  </footer>
 </body>
 </html>
